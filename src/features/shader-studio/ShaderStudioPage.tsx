@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import BabylonCanvas from '@/components/shader/BabylonCanvas';
 import GPULoader from '@/components/shader/GPULoader';
 import ShaderControls from './components/ShaderControls';
@@ -10,7 +10,9 @@ import { readPersistedStudioState, useStudioPersistence } from './hooks/useStudi
 import { useAudioReactiveRuntime } from './hooks/useAudioReactiveRuntime';
 import { useMidiRuntime } from './hooks/useMidiRuntime';
 import { DEFAULT_STUDIO_STATE } from './config/studioDefaults';
+import { exportShadertoyShader } from './services/shadertoyExportService';
 import { downloadBlob, recordCanvasVideo } from './services/videoExportService';
+import { WebGPUComputeService } from './services/webgpuComputeService';
 import { StudioState } from './types';
 
 export default function ShaderStudioPage() {
@@ -19,7 +21,11 @@ export default function ShaderStudioPage() {
   const [state, setState] = useState<StudioState>(initialState || DEFAULT_STUDIO_STATE);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const [shaderError, setShaderError] = useState<string | null>(null);
+  const [webgpuStatus, setWebgpuStatus] = useState(
+    WebGPUComputeService.isSupported() ? 'WebGPU disponible (test non exécuté)' : 'WebGPU indisponible sur ce navigateur',
+  );
   const { bands, start, stop } = useAudioReactiveRuntime(state.audio.enabled);
+  const webgpuRef = useRef(new WebGPUComputeService());
 
   const params = state.shader;
   const setParams = useCallback((updater: StudioState['shader'] | ((prev: StudioState['shader']) => StudioState['shader'])) => {
@@ -61,6 +67,29 @@ export default function ShaderStudioPage() {
     downloadBlob(blob, `shader-studio-${Date.now()}.webm`);
   }, [canvasEl, state.video]);
 
+  const handleExportShadertoy = useCallback(() => {
+    exportShadertoyShader(state.shader, state.shaderToy.channels);
+  }, [state.shader, state.shaderToy.channels]);
+
+  const handleRunWebGPU = useCallback(async () => {
+    if (!WebGPUComputeService.isSupported()) {
+      setWebgpuStatus('WebGPU indisponible sur ce navigateur');
+      return;
+    }
+
+    try {
+      const result = await webgpuRef.current.runParticleSimulation({
+        particleCount: 2048,
+        deltaTime: 0.016,
+      });
+      setWebgpuStatus(
+        `Simulation WebGPU OK · ${result.particleCount} particules · sample=(${result.sample.x.toFixed(2)}, ${result.sample.y.toFixed(2)})`,
+      );
+    } catch (error) {
+      setWebgpuStatus(`Erreur WebGPU: ${error instanceof Error ? error.message : 'inconnue'}`);
+    }
+  }, []);
+
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       {loading && <GPULoader onLoaded={handleLoaded} />}
@@ -92,6 +121,7 @@ export default function ShaderStudioPage() {
         audio={state.audio}
         video={state.video}
         midiStatus={midiStatus}
+        webgpuStatus={webgpuStatus}
         onAudioChange={(audio) => setState((prev) => ({ ...prev, audio }))}
         onVideoChange={(video) => setState((prev) => ({ ...prev, video }))}
         onStartAudio={() => {
@@ -103,6 +133,8 @@ export default function ShaderStudioPage() {
           stop();
         }}
         onExportVideo={handleExportVideo}
+        onExportShadertoy={handleExportShadertoy}
+        onRunWebGPU={handleRunWebGPU}
         onToggleMidi={() => setState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}
       />
       <LegacyMigrationSummary />

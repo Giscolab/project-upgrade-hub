@@ -128,6 +128,26 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     ],
   },
   {
+    id: 'shadertoy-webgpu',
+    legacyFile: 'ShadertoyExporter.js + WebGPUCompute.js',
+    reactTarget: 'src/features/shader-studio/services/* + ShaderStudioPage',
+    status: 'in_progress',
+    scope: 'Export ShaderToy et diagnostics compute WebGPU dans le flux React',
+    completedWork: [
+      'Service TypeScript buildShadertoyShaderFromParams ajouté',
+      'Bouton React Export ShaderToy branché au panneau Audio/Export',
+      'Service WebGPUComputeService TypeScript branché à un bouton de diagnostic React',
+    ],
+    remainingWork: [
+      'Connecter les channels ShaderToy avancés (textures multiples) dans l UI',
+      'Ajouter un affichage de trajectoires simulées WebGPU dans le rendu principal',
+    ],
+    validationChecks: [
+      'Le fichier .frag exporté contient les paramètres shader React courants',
+      'Le test WebGPU affiche un statut succès/erreur sans crash UI',
+    ],
+  },
+  {
     id: 'preset-storage',
     legacyFile: 'App.js localStorage and history blocks',
     reactTarget: 'src/features/shader-studio/state',
