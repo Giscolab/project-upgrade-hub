@@ -29,6 +29,15 @@ export interface PostProcessing {
   vignetteIntensity: number;
 }
 
+export interface MaterialParams {
+  metalness: number;
+  rimPower: number;
+  fresnelStrength: number;
+  twist: number;
+  pulse: number;
+  morphFactor: number;
+}
+
 export interface ShaderParams {
   geometry: GeometryType;
   noise: NoiseAlgorithm;
@@ -38,6 +47,7 @@ export interface ShaderParams {
   scale: number;
   colors: ShaderColors;
   postProcessing: PostProcessing;
+  material: MaterialParams;
   wireframe: boolean;
   autoRotate: boolean;
   rotationSpeed: number;
@@ -68,6 +78,14 @@ export const DEFAULT_SHADER_PARAMS: ShaderParams = {
     vignette: true,
     vignetteIntensity: 0.4,
   },
+  material: {
+    metalness: 0,
+    rimPower: 3,
+    fresnelStrength: 4,
+    twist: 0,
+    pulse: 2,
+    morphFactor: 0,
+  },
   wireframe: false,
   autoRotate: true,
   rotationSpeed: 0.5,
@@ -85,13 +103,15 @@ uniform mat4 worldViewProjection;
 uniform float uTime;
 uniform float uAmplitude;
 uniform float uFrequency;
+uniform float uTwist;
+uniform float uPulse;
+uniform float uMorphFactor;
 
 varying vec3 vPosition;
 varying vec3 vNormal;
 varying vec2 vUV;
 varying float vDisplacement;
 
-// Classic Perlin noise
 vec3 mod289(vec3 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
 vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
 vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -145,9 +165,17 @@ void main() {
   vNormal = normalize((world * vec4(normal, 0.0)).xyz);
 
   float displacement = snoise(position * uFrequency + uTime * 0.5) * uAmplitude;
-  vDisplacement = displacement;
+  float pulse = 1.0 + sin(uTime * uPulse) * 0.08;
 
-  vec3 newPosition = position + normal * displacement;
+  vec3 twisted = position;
+  float twistAngle = twisted.y * uTwist;
+  mat2 rot = mat2(cos(twistAngle), -sin(twistAngle), sin(twistAngle), cos(twistAngle));
+  twisted.xz = rot * twisted.xz;
+
+  vec3 morphed = mix(position, twisted, clamp(uMorphFactor, 0.0, 1.0));
+
+  vDisplacement = displacement;
+  vec3 newPosition = morphed * pulse + normal * displacement;
   vPosition = (world * vec4(newPosition, 1.0)).xyz;
 
   gl_Position = worldViewProjection * vec4(newPosition, 1.0);
@@ -161,6 +189,9 @@ uniform float uTime;
 uniform vec3 uColor1;
 uniform vec3 uColor2;
 uniform vec3 uColor3;
+uniform float uMetalness;
+uniform float uRimPower;
+uniform float uFresnelStrength;
 
 varying vec3 vPosition;
 varying vec3 vNormal;
@@ -170,16 +201,14 @@ varying float vDisplacement;
 void main() {
   vec3 light = normalize(vec3(1.0, 1.0, 2.0));
   float diff = max(dot(vNormal, light), 0.0);
-  float fresnel = pow(1.0 - max(dot(vNormal, normalize(-vPosition)), 0.0), 3.0);
+  float fresnel = pow(1.0 - max(dot(vNormal, normalize(-vPosition)), 0.0), max(1.0, uRimPower));
 
   vec3 col = mix(uColor1, uColor2, vDisplacement * 2.0 + 0.5);
   col = mix(col, uColor3, fresnel * 0.6);
 
-  col *= 0.3 + diff * 0.7;
-  col += fresnel * uColor3 * 0.4;
-
-  // Subtle rim glow
-  col += pow(fresnel, 4.0) * uColor2 * 0.3;
+  col *= 0.25 + diff * (0.75 + uMetalness * 0.2);
+  col += fresnel * uColor3 * (0.25 + uFresnelStrength * 0.08);
+  col += pow(fresnel, 4.0) * uColor2 * (0.15 + uMetalness * 0.25);
 
   gl_FragColor = vec4(col, 1.0);
 }
