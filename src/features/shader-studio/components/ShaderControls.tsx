@@ -114,6 +114,14 @@ export default function ShaderControls({ params, onParamsChange }: ShaderControl
           { key: 'wireframe', label: 'Wireframe' },
           { key: 'autoRotate', label: 'Auto rotate' },
           { key: 'bloom', label: 'Bloom', nested: true },
+          { key: 'rgbShift', label: 'RGB Shift', nested: true },
+          { key: 'glitch', label: 'Glitch', nested: true },
+          { key: 'pixelArt', label: 'Pixel', nested: true },
+          { key: 'vignette', label: 'Vignette', nested: true },
+        ].map((toggle) => {
+          const checked = toggle.nested
+            ? (params.postProcessing[toggle.key as keyof ShaderParams['postProcessing']] as boolean)
+            : (params[toggle.key as keyof ShaderParams] as boolean);
           { key: 'vignette', label: 'Vignette', nested: true },
         ].map((toggle) => {
           const checked = toggle.nested
