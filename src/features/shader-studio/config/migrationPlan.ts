@@ -46,12 +46,14 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Color pickers and key toggles migrated',
       'Post-process intensity sliders added',
       'Migration coverage panels are now rendered in the main Shader Studio page',
+      'ShaderControls toggle rendering loop has been stabilized and typechecked',
     ],
     remainingWork: [
       'Add advanced material controls (metalness, fresnel, rim)',
       'Add texture layers and blend mode controls',
       'Add shader code editor and validation actions',
       'Link each remaining migration item to actionable UI shortcuts',
+      'Finalize expert controls parity (material, texture, shader editor)',
     ],
     validationChecks: [
       'Every React control updates rendered output',
