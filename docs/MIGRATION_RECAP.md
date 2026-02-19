@@ -20,10 +20,11 @@
 ## Backlog réel restant (priorité migration)
 1. Audio runtime React complet (Web Audio, FFT, beat detect, mapping uniforms).
 2. MIDI runtime React complet (devices, learn, persistance, monitor).
-3. Export vidéo/image complet (MediaRecorder, progression, annulation, presets).
+3. Export vidéo/image complet (MediaRecorder déjà branché + export ShaderToy, progression/annulation/preset restant).
 4. Parité visuelle shader/post-process avec le legacy.
-5. Persistance unifiée (shader + audio + vidéo + versioning + migration schémas).
-6. Nettoyage final : décommissionnement des orchestrations legacy (`App.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `ShadertoyExporter.js`, `WebGPUCompute.js`).
+5. Intégration avancée WebGPU (visualisation runtime, fallback multi-device).
+6. Persistance unifiée (shader + audio + vidéo + versioning + migration schémas).
+7. Nettoyage final : décommissionnement des orchestrations legacy (`App.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `ShadertoyExporter.js`, `WebGPUCompute.js`).
 
 ## Définition de “React-only” (Done Definition)
 La migration sera considérée terminée uniquement si :

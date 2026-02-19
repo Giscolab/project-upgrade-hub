@@ -12,6 +12,7 @@
 - [x] Audio runtime branché (au-delà du scaffold d’UI/état).
 - [x] MIDI runtime branché.
 - [x] Export runtime branché.
+- [x] Export ShaderToy React branché + service WebGPU compute React de diagnostic.
 - [x] Persistance complète shader + audio + vidéo connectée dans le flux principal.
 
 ### 0.2 Corrections de statut par rapport aux itérations précédentes
@@ -86,8 +87,8 @@ La migration est considérée terminée uniquement si :
 ### 2.6 Export vidéo/image
 - **Legacy source**: `VideoRecorder.js`, `ShadertoyExporter.js`.
 - **React cible**: services export + UI progression.
-- **Statut**: ⛔ **Non migré runtime**.
-- **Constat**: pas de service MediaRecorder React ni progression/cancel actifs.
+- **Statut**: 🟡 **Partiellement migré**.
+- **Constat**: service MediaRecorder React branché, export ShaderToy React branché; progression/cancel export vidéo avancé restant à ajouter.
 
 ### 2.7 Persistance et état global
 - **Legacy source**: blocs localStorage/history de `App.js`.
@@ -103,6 +104,18 @@ La migration est considérée terminée uniquement si :
 - **Statut**: 🟡 **Partiel**.
 - **Migré**: adaptation initiale de paramètres legacy vers `ShaderParams`.
 - **Restant**: augmenter la couverture des paramètres non mappés et fiabiliser la mesure “migré/restant”.
+
+### 2.9 Compute WebGPU
+- **Legacy source**: `WebGPUCompute.js`.
+- **React cible**: `src/features/shader-studio/services/webgpuComputeService.ts` + actions React dans `ShaderStudioPage`.
+- **Statut**: 🟡 **Partiellement migré**.
+- **Migré**:
+  - service TypeScript WebGPU avec simulation particulaire,
+  - déclenchement de diagnostic depuis panneau React,
+  - remontée statut succès/erreur dans UI.
+- **Restant**:
+  - visualisation directe de la simulation WebGPU dans le rendu principal,
+  - scénarios de fallback multi-device plus complets.
 
 ---
 
@@ -141,7 +154,7 @@ La migration est considérée terminée uniquement si :
 ## Phase E — Export & recording
 - [x] Implémenter service export vidéo (MediaRecorder).
 - [ ] Ajouter progression + cancel + états erreur.
-- [ ] Ajouter export image PNG + export code shader.
+- [ ] Ajouter export image PNG + export code shader (ShaderToy code exporté, PNG restant).
 - [ ] Vérifier compatibilité navigateurs supportés.
 
 ## Phase F — Hardening & QA
