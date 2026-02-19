@@ -1,73 +1,85 @@
-# Welcome to your Lovable project
+# 🎨 Shader Studio v5
 
-## Project info
+> Un éditeur de shaders procéduraux "No-Code" haute performance, fonctionnant entièrement dans le navigateur avec WebGL.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![WebGL](https://img.shields.io/badge/WebGL-2.0-orange.svg)
 
-## How can I edit this code?
+**Shader Studio** est un outil créatif permettant de concevoir des visuels génératifs complexes, réactifs à la musique, sans écrire une seule ligne de code GLSL. Il combine la puissance de Three.js avec une interface intuitive pour offrir une expérience de VJing et de création numérique accessible à tous.
 
-There are several ways of editing your application.
+## ✨ Fonctionnalités Clés
 
-**Use Lovable**
+### 🧠 Moteur Génératif
+*   **18 Géométries Paramétriques** : Sphère, Tore, Klein Bottle, Ruban de Möbius, Cœur, Engrenage...
+*   **15 Algorithmes de Bruit** : Simplex, Voronoi, FBM, Domain Warping, Reaction-Diffusion, Mandelbrot...
+*   **22 Presets Visuels** : Cyberpunk, Lava Planet, Deep Ocean, Glitch Matrix...
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 🎵 Audio Réactivité (Audio Engine)
+*   Analyse spectrale en temps réel (FFT).
+*   Séparation des bandes **Bass / Mid / High**.
+*   **Mapping Dynamique** : Assignez n'importe quelle bande de fréquence à des paramètres visuels (Déplacement, Vitesse, Échelle).
+*   Détection de **BPM** et Flash sur le beat.
+*   Support Micro et Fichiers Audio (MP3, WAV, OGG).
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🎹 Contrôle MIDI
+*   **Support Web MIDI API** : Connectez vos contrôleurs physiques (Korg, Akai, etc.).
+*   **Mapping "Learn"** : Assignez facilement des potards aux paramètres du shader en un clic.
+*   **Feedback Visuel** : Moniteur d'entrées MIDI intégré pour le débogage.
 
-**Use your preferred IDE**
+### 🎬 Post-Processing & Export
+*   **Effets Cinématiques** : Bloom, RGB Shift (Aberration Chromatique), Glitch, Pixel Art, Vignette.
+*   **Export Vidéo** : Enregistrez des boucles parfaites en **WebM/MP4** (60 FPS) avec choix du bitrate et de la résolution (jusqu'à 4K).
+*   **Export Image** : Capture d'écran haute résolution (PNG).
+*   **Export Code** : Générez le code GLSL final pour l'utiliser dans vos propres projets.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🛠 Interface Pro
+*   Interface flottante rétractable (Tweakpane v4).
+*   Moniteurs de performance (FPS, MS, Graphiques Audio).
+*   Sauvegarde automatique des réglages (LocalStorage).
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Installation & Utilisation
 
-Follow these steps:
+Aucune installation complexe n'est requise (pas de `npm install`, pas de bundler). Le projet utilise des modules ES6 natifs.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Lancement Rapide
+1.  Clonez ce dépôt.
+2.  Servez le dossier racine avec un serveur web local (pour éviter les erreurs CORS).
+    *   **VS Code** : Installez l'extension "Live Server" et cliquez sur "Go Live".
+    *   **Python** : `python3 -m http.server`
+    *   **Node** : `npx serve`
+3.  Ouvrez votre navigateur sur `http://localhost:8000`.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Contrôles
+*   **Double-clic** sur le canvas : Plein écran.
+*   **Haut-droit (☰)** : Afficher/Masquer l'interface.
+*   **Glisser-déposer** : Chargez une image (texture) ou un fichier audio directement sur la fenêtre.
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 📂 Structure du Projet
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+/
+├── index.html          # Point d'entrée
+├── style.css           # Styles UI (Glassmorphism)
+├── src/
+│   ├── main.js         # Bootstrapper
+│   ├── App.js          # Orchestrateur principal (Three.js)
+│   ├── Config.js       # Définition des paramètres UI
+│   ├── shaders.js      # Bibliothèque de chunks GLSL
+│   ├── AudioEngine.js  # Analyse audio & Beat detection
+│   └── VideoRecorder.js # Moteur d'export vidéo
+│   └── MidiHandler.js  # Gestion Web MIDI API
+└── docs/               # Documentation
 ```
 
-**Edit a file directly in GitHub**
+## 🤝 Contribuer
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Les contributions sont les bienvenues ! Veuillez consulter CONTRIBUTING.md pour les détails.
 
-**Use GitHub Codespaces**
+## 📜 Licence
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
 
-## What technologies are used for this project?
+---
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+*Créé avec ❤️ et WebGL.*
