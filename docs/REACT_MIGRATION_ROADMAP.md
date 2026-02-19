@@ -4,6 +4,7 @@
 - ✅ L'application React affiche désormais le **snapshot legacy → React** directement dans l'écran principal (`LegacyMigrationSummary`).
 - ✅ La **checklist modulaire de migration** (`MigrationChecklistPanel`) est maintenant visible dans l'interface principale pour suivre les écarts restants en continu.
 - 🔄 Prochaine itération recommandée: relier chaque item restant à des actions concrètes (navigation vers panneau concerné / CTA).
+- ✅ Correction du bloc `ShaderControls` (toggles post-FX) pour rétablir un build TypeScript sain et poursuivre la migration UI.
 
 ---
 
@@ -92,6 +93,7 @@ La migration est considérée **terminée** uniquement si :
 - [ ] Ajouter migration automatique des clés localStorage legacy.
 
 ## Phase B — Parité visuelle shader (Semaines 1–2)
+- [x] Stabiliser `ShaderControls` (liste des toggles sans duplication JSX) pour supprimer les erreurs TS bloquantes.
 - [ ] Mapper toutes les géométries legacy à des builders Babylon.
 - [ ] Migrer tous les uniforms legacy manquants (twist/pulse/morph/material).
 - [ ] Refaire pipeline post-FX (ordre exact, intensités, toggles).

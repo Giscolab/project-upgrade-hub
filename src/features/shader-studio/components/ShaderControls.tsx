@@ -46,6 +46,16 @@ function ParamSlider({
 }
 
 export default function ShaderControls({ params, onParamsChange }: ShaderControlsProps) {
+  const toggles: Array<{ key: keyof ShaderParams | keyof ShaderParams['postProcessing']; label: string; nested?: boolean }> = [
+    { key: 'wireframe', label: 'Wireframe' },
+    { key: 'autoRotate', label: 'Auto rotate' },
+    { key: 'bloom', label: 'Bloom', nested: true },
+    { key: 'rgbShift', label: 'RGB Shift', nested: true },
+    { key: 'glitch', label: 'Glitch', nested: true },
+    { key: 'pixelArt', label: 'Pixel', nested: true },
+    { key: 'vignette', label: 'Vignette', nested: true },
+  ];
+
   return (
     <aside className="glass-panel absolute right-4 top-20 z-30 w-72 space-y-4 rounded-xl p-4">
       <div className="space-y-1">
@@ -110,23 +120,10 @@ export default function ShaderControls({ params, onParamsChange }: ShaderControl
       />
 
       <div className="grid grid-cols-2 gap-3 pt-2">
-        {[
-          { key: 'wireframe', label: 'Wireframe' },
-          { key: 'autoRotate', label: 'Auto rotate' },
-          { key: 'bloom', label: 'Bloom', nested: true },
-          { key: 'rgbShift', label: 'RGB Shift', nested: true },
-          { key: 'glitch', label: 'Glitch', nested: true },
-          { key: 'pixelArt', label: 'Pixel', nested: true },
-          { key: 'vignette', label: 'Vignette', nested: true },
-        ].map((toggle) => {
+        {toggles.map((toggle) => {
           const checked = toggle.nested
             ? (params.postProcessing[toggle.key as keyof ShaderParams['postProcessing']] as boolean)
             : (params[toggle.key as keyof ShaderParams] as boolean);
-          { key: 'vignette', label: 'Vignette', nested: true },
-        ].map((toggle) => {
-          const checked = toggle.nested
-            ? params.postProcessing[toggle.key as keyof ShaderParams['postProcessing']] as boolean
-            : params[toggle.key as keyof ShaderParams] as boolean;
 
           return (
             <label key={toggle.key} className="flex items-center justify-between gap-2 rounded-md border border-border/50 px-2 py-1.5 text-xs">
