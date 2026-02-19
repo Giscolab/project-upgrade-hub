@@ -18,7 +18,6 @@ export function buildShaderParamsFromLegacy(): ShaderParams {
     amplitude: findLegacyValue<number>('uDisplacementStrength') ?? DEFAULT_SHADER_PARAMS.amplitude,
     scale: findLegacyValue<number>('uScale') ?? DEFAULT_SHADER_PARAMS.scale,
     wireframe: findLegacyValue<boolean>('wireframe') ?? DEFAULT_SHADER_PARAMS.wireframe,
-    rotationSpeed: findLegacyValue<number>('rotationSpeed') ?? DEFAULT_SHADER_PARAMS.rotationSpeed,
     autoRotate: findLegacyValue<boolean>('autoRotate') ?? DEFAULT_SHADER_PARAMS.autoRotate,
     colors: {
       ...DEFAULT_SHADER_PARAMS.colors,
@@ -30,19 +29,6 @@ export function buildShaderParamsFromLegacy(): ShaderParams {
     postProcessing: {
       ...DEFAULT_SHADER_PARAMS.postProcessing,
       vignette: findLegacyValue<boolean>('vignetteMode') ?? DEFAULT_SHADER_PARAMS.postProcessing.vignette,
-      bloomIntensity: findLegacyValue<number>('bloomStrength') ?? DEFAULT_SHADER_PARAMS.postProcessing.bloomIntensity,
-      glitchIntensity: findLegacyValue<number>('glitchAmount') ?? DEFAULT_SHADER_PARAMS.postProcessing.glitchIntensity,
-      pixelSize: findLegacyValue<number>('pixelSize') ?? DEFAULT_SHADER_PARAMS.postProcessing.pixelSize,
-      vignetteIntensity: findLegacyValue<number>('vignetteAmount') ?? DEFAULT_SHADER_PARAMS.postProcessing.vignetteIntensity,
-    },
-    material: {
-      ...DEFAULT_SHADER_PARAMS.material,
-      twist: findLegacyValue<number>('uTwist') ?? DEFAULT_SHADER_PARAMS.material.twist,
-      pulse: findLegacyValue<number>('uPulse') ?? DEFAULT_SHADER_PARAMS.material.pulse,
-      morphFactor: findLegacyValue<number>('uMorphFactor') ?? DEFAULT_SHADER_PARAMS.material.morphFactor,
-      metalness: findLegacyValue<number>('uMetalness') ?? DEFAULT_SHADER_PARAMS.material.metalness,
-      rimPower: findLegacyValue<number>('uRimPower') ?? DEFAULT_SHADER_PARAMS.material.rimPower,
-      fresnelStrength: findLegacyValue<number>('uFresnelStrength') ?? DEFAULT_SHADER_PARAMS.material.fresnelStrength,
     },
   };
 }
@@ -60,17 +46,6 @@ const MIGRATED_PARAM_IDS = new Set([
   'uColorB',
   'uColorC',
   'bgColor',
-  'rotationSpeed',
-  'bloomStrength',
-  'glitchAmount',
-  'pixelSize',
-  'vignetteAmount',
-  'uTwist',
-  'uPulse',
-  'uMorphFactor',
-  'uMetalness',
-  'uRimPower',
-  'uFresnelStrength',
 ]);
 
 export function getLegacyCoverage() {

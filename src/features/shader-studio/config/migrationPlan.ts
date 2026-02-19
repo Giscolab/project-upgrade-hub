@@ -23,12 +23,11 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Shader uniforms (time, amplitude, frequency, colors) wired',
       'Scale updates are applied at runtime',
       'Extended geometry support migrated with MeshBuilder',
-      'Legacy uniforms twist/pulse/morph + material lighting are now wired in React',
     ],
     remainingWork: [
       'Migrate legacy post-process pipeline (pixel, glitch, vignette) to Babylon React flow',
       'Migrate ShaderToy mode uniforms and channel system',
-      'Finalize remaining custom geometry names not yet mapped',
+      'Reconcile legacy geometry names not yet mapped (custom shapes)',
     ],
     validationChecks: [
       'Geometry switch updates mesh without leaks',
@@ -48,6 +47,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Post-process intensity sliders added',
     ],
     remainingWork: [
+      'Add advanced material controls (metalness, fresnel, rim)',
       'Add texture layers and blend mode controls',
       'Add shader code editor and validation actions',
     ],
