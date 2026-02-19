@@ -1,5 +1,12 @@
 # Roadmap exhaustive — Migration complète vers React (Shader Studio)
 
+## 0) Avancement récent (mise à jour)
+- ✅ L'application React affiche désormais le **snapshot legacy → React** directement dans l'écran principal (`LegacyMigrationSummary`).
+- ✅ La **checklist modulaire de migration** (`MigrationChecklistPanel`) est maintenant visible dans l'interface principale pour suivre les écarts restants en continu.
+- 🔄 Prochaine itération recommandée: relier chaque item restant à des actions concrètes (navigation vers panneau concerné / CTA).
+
+---
+
 ## 1) Objectif produit (définition de fin)
 La migration est considérée **terminée** uniquement si :
 1. Toute orchestration runtime passe par des composants/hooks/services React typés.

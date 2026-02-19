@@ -8,7 +8,7 @@
 - La persistance locale couvre shader + audio + vidéo.
 - Un adapter legacy initialise les paramètres React depuis une base de config héritée.
 - Un suivi de couverture migration (migré/restant) est exposé dans l'UI.
-- Une checklist de migration modulaire est affichée dans l'interface.
+- Une checklist de migration modulaire est affichée dans l'interface principale (avec snapshot legacy visible en continu).
 
 ## Ce qui reste majeur
 - Audio engine réel (FFT, beat, mapping runtime).
