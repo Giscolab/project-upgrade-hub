@@ -20,6 +20,7 @@
 - [x] Le snapshot legacy est visible dans l’UI.
 - [x] Audio/export branchés dans `ShaderStudioPage` avec services runtime React (`WebAudio`, `MediaRecorder`).
 - [x] Persistance unifiée branchée dans le flux principal (shader + audio + vidéo + MIDI + migration clé legacy).
+- [x] Correctif bootstrap React appliqué (`#root` ajouté dans `index.html`) pour éliminer `createRoot(...): Target container is not a DOM element`.
 
 ---
 
@@ -39,7 +40,7 @@ La migration est considérée terminée uniquement si :
 - **Legacy source**: `main.js` + initialisation legacy.
 - **React cible**: `src/main.tsx`, `src/App.tsx`, `src/pages/Index.tsx`.
 - **Statut**: ✅ **Migré intégralement**.
-- **Justification**: entrée, providers, routing et page principale sont React-first.
+- **Justification**: entrée, providers, routing et page principale sont React-first, avec conteneur DOM React explicitement présent (`#root`).
 
 ### 2.2 Runtime graphique (scene, mesh, shader)
 - **Legacy source**: `App.js`, `shaders.js`.
@@ -117,7 +118,7 @@ La migration est considérée terminée uniquement si :
 - [x] Migrer le socle runtime Babylon React (scene/camera/mesh/uniforms principaux).
 - [ ] Mapper 100% des géométries legacy encore absentes.
 - [ ] Finaliser calibration de parité pixel/glitch/vignette vs rendu legacy (ordre/intensité exacts).
-- [ ] Ajouter overlay d’erreurs shader compile/runtime.
+- [x] Ajouter overlay d’erreurs shader compile/runtime.
 - [ ] Ajouter presets visuels React (CRUD + restore).
 
 ## Phase C — Audio React complet
@@ -170,7 +171,13 @@ La migration est considérée terminée uniquement si :
 
 ---
 
-## 5) Gouvernance de migration
+## 5) Incident runtime traité (itération en cours)
+- **Erreur observée**: `Uncaught Error: createRoot(...): Target container is not a DOM element.`
+- **Cause racine**: `src/main.tsx` monte React sur `document.getElementById('root')`, mais `index.html` ne déclarait pas de noeud `id="root"`.
+- **Correction appliquée**: ajout de `<div id="root"></div>` dans `index.html` pour aligner le bootstrap React avec le runtime Vite.
+- **Impact migration**: le shell React devient réellement bootable dans le flux principal, ce qui débloque la validation des phases B→F en environnement navigateur.
+
+## 6) Gouvernance de migration
 - Chaque PR de migration doit :
   1. mettre à jour `src/features/shader-studio/config/migrationPlan.ts`,
   2. mettre à jour ce document `docs/REACT_MIGRATION_ROADMAP.md`,

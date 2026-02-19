@@ -27,11 +27,12 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     ],
     remainingWork: [
       'Reconcile legacy geometry names not yet mapped (custom shapes)',
+      'Finalize parity tuning for post-process intensity/order against legacy output',
     ],
     validationChecks: [
       'Geometry switch updates mesh without leaks',
       'Scale and rotation controls update in real time',
-      'Shader compile/runtime errors are surfaced in UI',
+      'Shader compile/runtime errors are surfaced in UI overlay',
     ],
   },
   {
@@ -46,11 +47,13 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Post-process intensity sliders added',
       'Migration coverage panels are now rendered in the main Shader Studio page',
       'ShaderControls toggle rendering loop has been stabilized and typechecked',
+      'Shader compile/runtime error overlay is now wired in ShaderStudioPage',
     ],
     remainingWork: [
       'Add advanced material controls (metalness, fresnel, rim)',
       'Add texture layers and blend mode controls',
       'Add shader code editor and validation actions',
+      'Connect migration checklist entries to deep links/CTAs in controls',
       'Link each remaining migration item to actionable UI shortcuts',
       'Finalize expert controls parity (material, texture, shader editor)',
     ],
