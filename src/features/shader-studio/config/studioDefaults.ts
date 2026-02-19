@@ -28,4 +28,8 @@ export const DEFAULT_STUDIO_STATE: StudioState = {
       3: 'speed',
     },
   },
+  shaderToy: {
+    enabled: false,
+    channels: [null, null, null, null],
+  },
 };

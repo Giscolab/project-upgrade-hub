@@ -26,14 +26,12 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Pixel/glitch/vignette post-process chain is now connected in the Babylon React flow',
     ],
     remainingWork: [
-      'Migrate legacy post-process pipeline (pixel, glitch, vignette) to Babylon React flow',
-      'Migrate ShaderToy mode uniforms and channel system',
       'Reconcile legacy geometry names not yet mapped (custom shapes)',
     ],
     validationChecks: [
       'Geometry switch updates mesh without leaks',
       'Scale and rotation controls update in real time',
-      'Shader compile errors are surfaced in UI',
+      'Shader compile/runtime errors are surfaced in UI',
     ],
   },
   {

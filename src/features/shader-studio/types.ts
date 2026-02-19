@@ -20,9 +20,15 @@ export interface MidiSettings {
   mappedCc: Partial<Record<number, 'amplitude' | 'frequency' | 'speed' | 'scale'>>;
 }
 
+export interface ShaderToySettings {
+  enabled: boolean;
+  channels: Array<string | null>;
+}
+
 export interface StudioState {
   shader: import('@/types/shader').ShaderParams;
   audio: AudioReactiveSettings;
   video: VideoExportSettings;
   midi: MidiSettings;
+  shaderToy: ShaderToySettings;
 }
