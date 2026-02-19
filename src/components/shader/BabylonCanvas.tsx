@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Engine, Scene, ArcRotateCamera, Vector3, ShaderMaterial, Mesh, Color4, Effect } from '@babylonjs/core';
+import { Engine, Scene, ArcRotateCamera, Vector3, ShaderMaterial, Mesh, Color4, Effect, MeshBuilder } from '@babylonjs/core';
 import { ShaderParams, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 
 interface BabylonCanvasProps {
@@ -16,18 +16,23 @@ function hexToVec3(hex: string): [number, number, number] {
 }
 
 function createMeshForGeometry(type: string, scene: Scene): Mesh {
-  const opts = { diameter: 2, size: 1.6, segments: 128, subdivisions: 128 };
   switch (type) {
-    case 'box': return Mesh.CreateBox('mesh', opts.size, scene);
-    case 'torus': return Mesh.CreateTorus('mesh', 2, 0.6, 128, scene);
-    case 'plane': return Mesh.CreatePlane('mesh', 2.5, scene);
-    case 'cylinder': return Mesh.CreateCylinder('mesh', 2, 1, 1, 128, 1, scene);
-    case 'cone': return Mesh.CreateCylinder('mesh', 2, 0, 1.4, 128, 1, scene);
-    case 'torusKnot': return Mesh.CreateTorusKnot('mesh', 0.8, 0.3, 128, 64, 2, 3, scene);
-    case 'disc': return Mesh.CreateDisc('mesh', 1.2, 128, scene);
-    case 'ground': return Mesh.CreateGround('mesh', 3, 3, 128, scene);
+    case 'box': return MeshBuilder.CreateBox('mesh', { size: 1.6 }, scene);
+    case 'torus': return MeshBuilder.CreateTorus('mesh', { diameter: 2, thickness: 0.6, tessellation: 128 }, scene);
+    case 'plane': return MeshBuilder.CreatePlane('mesh', { size: 2.5 }, scene);
+    case 'cylinder': return MeshBuilder.CreateCylinder('mesh', { height: 2, diameterTop: 1, diameterBottom: 1, tessellation: 128 }, scene);
+    case 'cone': return MeshBuilder.CreateCylinder('mesh', { height: 2, diameterTop: 0, diameterBottom: 1.4, tessellation: 128 }, scene);
+    case 'torusKnot': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.3, radialSegments: 128, tubularSegments: 64 }, scene);
+    case 'icosphere': return MeshBuilder.CreateIcoSphere('mesh', { radius: 1, subdivisions: 4 }, scene);
+    case 'octahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 1, size: 1.2 }, scene);
+    case 'dodecahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 3, size: 1.2 }, scene);
+    case 'tetrahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 0, size: 1.2 }, scene);
+    case 'capsule': return MeshBuilder.CreateCapsule('mesh', { height: 2, radius: 0.6, tessellation: 24 }, scene);
+    case 'disc': return MeshBuilder.CreateDisc('mesh', { radius: 1.2, tessellation: 128 }, scene);
+    case 'ground': return MeshBuilder.CreateGround('mesh', { width: 3, height: 3, subdivisions: 128 }, scene);
+    case 'hemisphere': return MeshBuilder.CreateSphere('mesh', { diameter: 2, segments: 64, slice: 0.5 }, scene);
     case 'sphere':
-    default: return Mesh.CreateSphere('mesh', 128, opts.diameter, scene);
+    default: return MeshBuilder.CreateSphere('mesh', { diameter: 2, segments: 128 }, scene);
   }
 }
 
@@ -106,6 +111,10 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasPr
       material.setVector3('uColor1', new Vector3(c1[0], c1[1], c1[2]));
       material.setVector3('uColor2', new Vector3(c2[0], c2[1], c2[2]));
       material.setVector3('uColor3', new Vector3(c3[0], c3[1], c3[2]));
+
+      if (mesh) {
+        mesh.scaling.setAll(p.scale);
+      }
 
       if (p.autoRotate && mesh) {
         mesh.rotation.y += engine.getDeltaTime() * 0.001 * p.rotationSpeed;
