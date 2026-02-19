@@ -85,7 +85,7 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasPr
       fragment: 'custom',
     }, {
       attributes: ['position', 'normal', 'uv'],
-      uniforms: ['world', 'worldViewProjection', 'uTime', 'uAmplitude', 'uFrequency', 'uColor1', 'uColor2', 'uColor3'],
+      uniforms: ['world', 'worldViewProjection', 'uTime', 'uAmplitude', 'uFrequency', 'uTwist', 'uPulse', 'uMorphFactor', 'uMetalness', 'uRimPower', 'uFresnelStrength', 'uColor1', 'uColor2', 'uColor3'],
     });
 
     materialRef.current = material;
@@ -104,6 +104,12 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasPr
       material.setFloat('uTime', timeRef.current);
       material.setFloat('uAmplitude', p.amplitude);
       material.setFloat('uFrequency', p.frequency);
+      material.setFloat('uTwist', p.material.twist);
+      material.setFloat('uPulse', p.material.pulse);
+      material.setFloat('uMorphFactor', p.material.morphFactor);
+      material.setFloat('uMetalness', p.material.metalness);
+      material.setFloat('uRimPower', p.material.rimPower);
+      material.setFloat('uFresnelStrength', p.material.fresnelStrength);
 
       const c1 = hexToVec3(p.colors.color1);
       const c2 = hexToVec3(p.colors.color2);
