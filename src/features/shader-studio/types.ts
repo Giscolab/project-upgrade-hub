@@ -1,4 +1,5 @@
 export interface AudioReactiveSettings {
+  enabled: boolean;
   mapBassTo: 'displacement' | 'speed' | 'scale' | 'none';
   mapMidTo: 'displacement' | 'speed' | 'scale' | 'none';
   mapHighTo: 'displacement' | 'speed' | 'scale' | 'none';
@@ -12,4 +13,16 @@ export interface VideoExportSettings {
   compression: string;
   resolution: string;
   fps: number;
+}
+
+export interface MidiSettings {
+  enabled: boolean;
+  mappedCc: Partial<Record<number, 'amplitude' | 'frequency' | 'speed' | 'scale'>>;
+}
+
+export interface StudioState {
+  shader: import('@/types/shader').ShaderParams;
+  audio: AudioReactiveSettings;
+  video: VideoExportSettings;
+  midi: MidiSettings;
 }

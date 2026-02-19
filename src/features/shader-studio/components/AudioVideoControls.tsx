@@ -6,20 +6,38 @@ import { AudioReactiveSettings, VideoExportSettings } from '../types';
 interface AudioVideoControlsProps {
   audio: AudioReactiveSettings;
   video: VideoExportSettings;
+  midiStatus: string;
   onAudioChange: (audio: AudioReactiveSettings) => void;
   onVideoChange: (video: VideoExportSettings) => void;
+  onStartAudio: () => void;
+  onStopAudio: () => void;
+  onExportVideo: () => void;
+  onToggleMidi: () => void;
 }
 
 const AUDIO_TARGETS: AudioReactiveSettings['mapBassTo'][] = ['displacement', 'speed', 'scale', 'none'];
 
-export default function AudioVideoControls({ audio, video, onAudioChange, onVideoChange }: AudioVideoControlsProps) {
+export default function AudioVideoControls({ audio, video, midiStatus, onAudioChange, onVideoChange, onStartAudio, onStopAudio, onExportVideo, onToggleMidi }: AudioVideoControlsProps) {
   return (
     <aside className="glass-panel absolute left-4 top-20 z-30 max-h-[calc(100vh-10rem)] w-80 space-y-4 overflow-auto rounded-xl p-4">
       <h2 className="text-sm font-semibold">Audio / Export (migration)</h2>
 
+      <div className="flex gap-2">
+        <button className="rounded bg-primary px-2 py-1 text-xs text-primary-foreground" onClick={audio.enabled ? onStopAudio : onStartAudio}>
+          {audio.enabled ? 'Couper audio' : 'Activer micro'}
+        </button>
+        <button className="rounded bg-accent px-2 py-1 text-xs text-accent-foreground" onClick={onExportVideo}>
+          Export vidéo
+        </button>
+        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onToggleMidi}>
+          Toggle MIDI
+        </button>
+      </div>
+      <p className="text-xs text-muted-foreground">{midiStatus}</p>
+
       <div className="space-y-1">
         <Label>Bass mapping</Label>
-        <Select value={audio.mapBassTo} onValueChange={(mapBassTo) => onAudioChange({ ...audio, mapBassTo: mapBassTo as AudioReactiveSettings['mapBassTo'] })}>
+        <Select value={audio.mapBassTo} onValueChange={(mapBassTo) => onAudioChange({ ...audio, mapBassTo: mapBassTo as AudioReactiveSettings['mapBassTo'], enabled: true })}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>{AUDIO_TARGETS.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
         </Select>
@@ -27,7 +45,7 @@ export default function AudioVideoControls({ audio, video, onAudioChange, onVide
 
       <div className="space-y-1">
         <Label>Mid mapping</Label>
-        <Select value={audio.mapMidTo} onValueChange={(mapMidTo) => onAudioChange({ ...audio, mapMidTo: mapMidTo as AudioReactiveSettings['mapMidTo'] })}>
+        <Select value={audio.mapMidTo} onValueChange={(mapMidTo) => onAudioChange({ ...audio, mapMidTo: mapMidTo as AudioReactiveSettings['mapMidTo'], enabled: true })}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>{AUDIO_TARGETS.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}</SelectContent>
         </Select>
