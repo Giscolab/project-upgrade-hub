@@ -56,6 +56,8 @@ La migration est considérée terminée uniquement si :
   - mode ShaderToy avancé/channels,
   - surface d’erreurs shader (compile/runtime) en UI.
 
+**Décision roadmap (itération actuelle)**: conserver le runtime Babylon React comme base validée, puis traiter les 3 gaps critiques ci-dessus avant de reclasser ce bloc en ✅.
+
 ### 2.3 Contrôles UI shader
 - **Legacy source**: sections Tweakpane de `App.js`.
 - **React cible**: `ShaderControls.tsx`.
@@ -118,7 +120,8 @@ La migration est considérée terminée uniquement si :
 - [x] Migrer le socle runtime Babylon React (scene/camera/mesh/uniforms principaux).
 - [ ] Mapper 100% des géométries legacy encore absentes.
 - [ ] Finaliser calibration de parité pixel/glitch/vignette vs rendu legacy (ordre/intensité exacts).
-- [x] Ajouter overlay d’erreurs shader compile/runtime.
+- [ ] Ajouter overlay d’erreurs shader compile/runtime.
+- [ ] Finaliser mode ShaderToy avancé (channels, inputs multiples, comportement full-pass).
 - [ ] Ajouter presets visuels React (CRUD + restore).
 
 ## Phase C — Audio React complet
