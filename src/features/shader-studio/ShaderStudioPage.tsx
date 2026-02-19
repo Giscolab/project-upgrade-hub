@@ -18,6 +18,7 @@ export default function ShaderStudioPage() {
   const [loading, setLoading] = useState(true);
   const [state, setState] = useState<StudioState>(initialState || DEFAULT_STUDIO_STATE);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const [shaderError, setShaderError] = useState<string | null>(null);
   const { bands, start, stop } = useAudioReactiveRuntime(state.audio.enabled);
 
   const params = state.shader;
@@ -63,7 +64,12 @@ export default function ShaderStudioPage() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       {loading && <GPULoader onLoaded={handleLoaded} />}
-      <BabylonCanvas params={mappedParams} onCanvasReady={setCanvasEl} />
+      <BabylonCanvas
+        params={mappedParams}
+        shaderToyChannels={state.shaderToy.channels}
+        onCanvasReady={setCanvasEl}
+        onShaderError={setShaderError}
+      />
 
       <header className="glass-panel absolute left-4 right-4 top-4 z-30 flex h-12 items-center justify-between rounded-xl px-4">
         <div className="flex items-center gap-3">
@@ -72,6 +78,14 @@ export default function ShaderStudioPage() {
         </div>
         <div className="text-xs text-muted-foreground">Unification React en cours</div>
       </header>
+
+
+      {shaderError && (
+        <section className="glass-panel absolute left-4 top-20 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
+          <p className="mb-1 font-semibold">Shader compile/runtime error</p>
+          <pre className="max-h-28 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{shaderError}</pre>
+        </section>
+      )}
 
       <ShaderControls params={params} onParamsChange={setParams} />
       <AudioVideoControls

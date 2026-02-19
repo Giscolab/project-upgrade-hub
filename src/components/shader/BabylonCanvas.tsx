@@ -1,12 +1,46 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Engine, Scene, ArcRotateCamera, Vector3, ShaderMaterial, Mesh, Color4, Effect, MeshBuilder, PostProcess } from '@babylonjs/core';
+import {
+  Engine,
+  Scene,
+  ArcRotateCamera,
+  Vector3,
+  ShaderMaterial,
+  Mesh,
+  Color4,
+  Effect,
+  MeshBuilder,
+  PostProcess,
+  DefaultRenderingPipeline,
+  ChromaticAberrationPostProcess,
+  Texture,
+} from '@babylonjs/core';
 import { ShaderParams, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 
 interface BabylonCanvasProps {
   params: ShaderParams;
   vertexShader?: string;
   fragmentShader?: string;
+  shaderToyChannels?: Array<string | null>;
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
+  onShaderError?: (message: string | null) => void;
+}
+
+const SHADERTOY_CHANNEL_COUNT = 4;
+
+function toShaderToyFragment(fragmentSource: string) {
+  if (!fragmentSource.includes('mainImage')) {
+    return fragmentSource;
+  }
+
+  return `
+${fragmentSource}
+
+void main() {
+  vec4 fragColor = vec4(0.0);
+  mainImage(fragColor, gl_FragCoord.xy);
+  gl_FragColor = fragColor;
+}
+`;
 }
 
 function hexToVec3(hex: string): [number, number, number] {
@@ -37,7 +71,7 @@ function createMeshForGeometry(type: string, scene: Scene): Mesh {
   }
 }
 
-const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: BabylonCanvasProps) => {
+const BabylonCanvas = ({ params, vertexShader, fragmentShader, shaderToyChannels, onCanvasReady, onShaderError }: BabylonCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -63,7 +97,7 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
     const scene = new Scene(engine);
     sceneRef.current = scene;
     
-    const bgColor = hexToVec3(params.colors.background);
+    const bgColor = hexToVec3(paramsRef.current.colors.background);
     scene.clearColor = new Color4(bgColor[0], bgColor[1], bgColor[2], 1);
 
     // Camera
@@ -75,7 +109,7 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
 
     // Register custom shader
     const vs = vertexShader || DEFAULT_VERTEX_SHADER;
-    const fs = fragmentShader || DEFAULT_FRAGMENT_SHADER;
+    const fs = toShaderToyFragment(fragmentShader || DEFAULT_FRAGMENT_SHADER);
 
     Effect.ShadersStore['customVertexShader'] = vs;
     Effect.ShadersStore['customFragmentShader'] = fs;
@@ -86,16 +120,49 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
       fragment: 'custom',
     }, {
       attributes: ['position', 'normal', 'uv'],
-      uniforms: ['world', 'worldViewProjection', 'uTime', 'uAmplitude', 'uFrequency', 'uTwist', 'uPulse', 'uMorphFactor', 'uMetalness', 'uRimPower', 'uFresnelStrength', 'uColor1', 'uColor2', 'uColor3'],
+      uniforms: [
+        'world',
+        'worldViewProjection',
+        'uTime',
+        'uAmplitude',
+        'uFrequency',
+        'uTwist',
+        'uPulse',
+        'uMorphFactor',
+        'uMetalness',
+        'uRimPower',
+        'uFresnelStrength',
+        'uColor1',
+        'uColor2',
+        'uColor3',
+        'iTime',
+        'iResolution',
+        'iMouse',
+        'iChannelTime',
+        'iChannelResolution',
+      ],
+      samplers: ['iChannel0', 'iChannel1', 'iChannel2', 'iChannel3'],
     });
 
     materialRef.current = material;
-    material.wireframe = params.wireframe;
+    material.wireframe = paramsRef.current.wireframe;
 
     // Create mesh
     const mesh = createMeshForGeometry(params.geometry, scene);
     mesh.material = material;
     meshRef.current = mesh;
+
+    const channels: Texture[] = Array.from({ length: SHADERTOY_CHANNEL_COUNT }, (_, index) => {
+      const input = shaderToyChannels?.[index];
+      if (input) {
+        return new Texture(input, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+      }
+      return Texture.CreateFromBase64String(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=',
+        `fallbackChannel${index}`,
+        scene,
+      );
+    });
 
     Effect.ShadersStore.pixelFragmentShader = `
       precision highp float;
@@ -140,6 +207,11 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
     const pixelPP = new PostProcess('pixel', 'pixel', ['pixelSize', 'resolution'], null, 1.0, camera);
     const glitchPP = new PostProcess('glitch', 'glitch', ['intensity', 'time'], null, 1.0, camera);
     const vignettePP = new PostProcess('vignette', 'vignette', ['intensity'], null, 1.0, camera);
+    const rgbShiftPP = new ChromaticAberrationPostProcess('rgb-shift', 800, 600, 1, camera);
+    const postPipeline = new DefaultRenderingPipeline('default-pipeline', true, scene, [camera]);
+
+    postPipeline.bloomEnabled = paramsRef.current.postProcessing.bloom;
+    postPipeline.bloomWeight = paramsRef.current.postProcessing.bloomIntensity;
 
     // Render loop
     engine.runRenderLoop(() => {
@@ -155,6 +227,19 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
       material.setFloat('uMetalness', p.material.metalness);
       material.setFloat('uRimPower', p.material.rimPower);
       material.setFloat('uFresnelStrength', p.material.fresnelStrength);
+      material.setFloat('iTime', timeRef.current);
+      material.setVector3('iResolution', new Vector3(engine.getRenderWidth(), engine.getRenderHeight(), 1));
+      material.setVector3('iMouse', Vector3.Zero());
+      material.setArray4('iChannelTime', [timeRef.current, timeRef.current, timeRef.current, timeRef.current]);
+      material.setArray4('iChannelResolution', [
+        channels[0].getSize().width,
+        channels[0].getSize().height,
+        channels[1].getSize().width,
+        channels[1].getSize().height,
+      ]);
+      channels.forEach((channel, index) => {
+        material.setTexture(`iChannel${index}`, channel);
+      });
 
       const c1 = hexToVec3(p.colors.color1);
       const c2 = hexToVec3(p.colors.color2);
@@ -182,6 +267,12 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
       vignettePP.onApply = (effect) => {
         effect.setFloat('intensity', p.postProcessing.vignette ? p.postProcessing.vignetteIntensity : 0);
       };
+      rgbShiftPP.aberrationAmount = p.postProcessing.rgbShift ? p.postProcessing.rgbShiftAmount * 400 : 0;
+      postPipeline.bloomEnabled = p.postProcessing.bloom;
+      postPipeline.bloomWeight = p.postProcessing.bloomIntensity;
+
+      const shaderError = material.getEffect()?.getCompilationError() || null;
+      onShaderError?.(shaderError);
 
       scene.render();
     });
@@ -191,9 +282,10 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: 
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      channels.forEach((channel) => channel.dispose());
       engine.dispose();
     };
-  }, [vertexShader, fragmentShader, params.geometry]);
+  }, [vertexShader, fragmentShader, params.geometry, onShaderError, shaderToyChannels]);
 
   // Initial setup & re-setup on geometry/shader change
   useEffect(() => {
