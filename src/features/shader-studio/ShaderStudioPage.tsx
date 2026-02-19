@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
 import { useCallback, useState } from 'react';
 import BabylonCanvas from '@/components/shader/BabylonCanvas';
 import GPULoader from '@/components/shader/GPULoader';
 import { useShaderParams } from '@/hooks/useShaderParams';
 import ShaderControls from './components/ShaderControls';
+import LegacyMigrationSummary from './components/LegacyMigrationSummary';
+import MigrationChecklistPanel from './components/MigrationChecklistPanel';
 import { formatStatus } from './config/defaults';
 
 export default function ShaderStudioPage() {
@@ -26,6 +27,8 @@ export default function ShaderStudioPage() {
       </header>
 
       <ShaderControls params={params} onParamsChange={setParams} />
+      <LegacyMigrationSummary />
+      <MigrationChecklistPanel />
 
       <div className="glass-panel absolute bottom-4 left-4 right-4 z-30 flex h-8 items-center justify-between rounded-lg px-4 text-xs text-muted-foreground">
         <span>{formatStatus(params)}</span>
