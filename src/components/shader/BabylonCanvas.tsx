@@ -1,11 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Engine, Scene, ArcRotateCamera, Vector3, ShaderMaterial, Mesh, Color4, Effect, MeshBuilder } from '@babylonjs/core';
+import { Engine, Scene, ArcRotateCamera, Vector3, ShaderMaterial, Mesh, Color4, Effect, MeshBuilder, PostProcess } from '@babylonjs/core';
 import { ShaderParams, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 
 interface BabylonCanvasProps {
   params: ShaderParams;
   vertexShader?: string;
   fragmentShader?: string;
+  onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
 }
 
 function hexToVec3(hex: string): [number, number, number] {
@@ -36,7 +37,7 @@ function createMeshForGeometry(type: string, scene: Scene): Mesh {
   }
 }
 
-const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasProps) => {
+const BabylonCanvas = ({ params, vertexShader, fragmentShader, onCanvasReady }: BabylonCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -96,6 +97,50 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasPr
     mesh.material = material;
     meshRef.current = mesh;
 
+    Effect.ShadersStore.pixelFragmentShader = `
+      precision highp float;
+      varying vec2 vUV;
+      uniform sampler2D textureSampler;
+      uniform vec2 resolution;
+      uniform float pixelSize;
+      void main(){
+        vec2 dxy = pixelSize / resolution;
+        vec2 coord = dxy * floor(vUV / dxy);
+        gl_FragColor = texture2D(textureSampler, coord);
+      }
+    `;
+    Effect.ShadersStore.glitchFragmentShader = `
+      precision highp float;
+      varying vec2 vUV;
+      uniform sampler2D textureSampler;
+      uniform float intensity;
+      uniform float time;
+      void main(){
+        float offset = sin(vUV.y * 40.0 + time * 8.0) * intensity * 0.03;
+        float r = texture2D(textureSampler, vUV + vec2(offset, 0.0)).r;
+        float g = texture2D(textureSampler, vUV).g;
+        float b = texture2D(textureSampler, vUV - vec2(offset, 0.0)).b;
+        gl_FragColor = vec4(r, g, b, 1.0);
+      }
+    `;
+    Effect.ShadersStore.vignetteFragmentShader = `
+      precision highp float;
+      varying vec2 vUV;
+      uniform sampler2D textureSampler;
+      uniform float intensity;
+      void main(){
+        vec4 color = texture2D(textureSampler, vUV);
+        float dist = distance(vUV, vec2(0.5));
+        float vig = smoothstep(0.2, 0.8, dist);
+        color.rgb *= (1.0 - vig * intensity);
+        gl_FragColor = color;
+      }
+    `;
+
+    const pixelPP = new PostProcess('pixel', 'pixel', ['pixelSize', 'resolution'], null, 1.0, camera);
+    const glitchPP = new PostProcess('glitch', 'glitch', ['intensity', 'time'], null, 1.0, camera);
+    const vignettePP = new PostProcess('vignette', 'vignette', ['intensity'], null, 1.0, camera);
+
     // Render loop
     engine.runRenderLoop(() => {
       const p = paramsRef.current;
@@ -126,6 +171,18 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasPr
         mesh.rotation.y += engine.getDeltaTime() * 0.001 * p.rotationSpeed;
       }
 
+      pixelPP.onApply = (effect) => {
+        effect.setFloat('pixelSize', p.postProcessing.pixelArt ? p.postProcessing.pixelSize : 1);
+        effect.setFloat2('resolution', engine.getRenderWidth(), engine.getRenderHeight());
+      };
+      glitchPP.onApply = (effect) => {
+        effect.setFloat('intensity', p.postProcessing.glitch ? p.postProcessing.glitchIntensity : 0);
+        effect.setFloat('time', timeRef.current);
+      };
+      vignettePP.onApply = (effect) => {
+        effect.setFloat('intensity', p.postProcessing.vignette ? p.postProcessing.vignetteIntensity : 0);
+      };
+
       scene.render();
     });
 
@@ -141,8 +198,9 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader }: BabylonCanvasPr
   // Initial setup & re-setup on geometry/shader change
   useEffect(() => {
     const cleanup = setupScene();
+    onCanvasReady?.(canvasRef.current);
     return cleanup;
-  }, [setupScene]);
+  }, [onCanvasReady, setupScene]);
 
   // Update wireframe without re-creating scene
   useEffect(() => {

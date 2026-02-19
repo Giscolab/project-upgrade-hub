@@ -23,6 +23,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Shader uniforms (time, amplitude, frequency, colors) wired',
       'Scale updates are applied at runtime',
       'Extended geometry support migrated with MeshBuilder',
+      'Pixel/glitch/vignette post-process chain is now connected in the Babylon React flow',
     ],
     remainingWork: [
       'Migrate legacy post-process pipeline (pixel, glitch, vignette) to Babylon React flow',
@@ -65,15 +66,15 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     id: 'audio-engine',
     legacyFile: 'AudioEngine.js',
     reactTarget: 'src/features/shader-studio/hooks + services',
-    status: 'pending',
+    status: 'in_progress',
     scope: 'Audio input, FFT analysis, band mapping, beat detection',
     completedWork: [
       'Audio settings state scaffold created in React',
+      'Web Audio runtime hook integrated in ShaderStudioPage',
+      'Live mic FFT bands map to shader params in React flow',
     ],
     remainingWork: [
-      'Create React audio service wrapper around Web Audio API',
-      'Map band values into shader params in render loop',
-      'Add mic/file source selectors with permissions handling',
+      'Add file source selector + pause/resume controls',
       'Implement beat flash and threshold calibration UI',
     ],
     validationChecks: [
@@ -86,9 +87,12 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     id: 'midi',
     legacyFile: 'MidiHandler.js',
     reactTarget: 'src/features/shader-studio/hooks/useMidiMapping.ts',
-    status: 'pending',
+    status: 'in_progress',
     scope: 'MIDI learn, mapping persistence, input monitor',
-    completedWork: [],
+    completedWork: [
+      'Web MIDI lifecycle hook wired in main React page',
+      'CC events can update mapped shader parameters at runtime',
+    ],
     remainingWork: [
       'Implement Web MIDI connection lifecycle hook',
       'Add MIDI learn flow on selected React control',
@@ -104,10 +108,12 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     id: 'video-export',
     legacyFile: 'VideoRecorder.js',
     reactTarget: 'src/features/shader-studio/services/videoExportService.ts',
-    status: 'pending',
+    status: 'in_progress',
     scope: 'Render capture (webm/mp4), bitrate/resolution presets',
     completedWork: [
       'Video settings state scaffold created in React',
+      'MediaRecorder runtime service wired for canvas capture',
+      'Export action connected in Audio/Export panel',
     ],
     remainingWork: [
       'Integrate MediaRecorder capture workflow',
@@ -128,6 +134,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     scope: 'State persistence, preset save/load, undo/redo',
     completedWork: [
       'Local storage persistence for shader/audio/video states',
+      'Versioned persistence payload with legacy key migration',
     ],
     remainingWork: [
       'Add named preset manager and versioning',

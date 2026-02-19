@@ -8,18 +8,18 @@
 - [x] Canvas Babylon encapsulé React (`src/components/shader/BabylonCanvas.tsx`) avec uniforms runtime.
 - [x] Contrôles shader React de base opérationnels (`ShaderControls.tsx`).
 - [x] Composants de visibilité migration exposés à l’écran (`LegacyMigrationSummary`, `MigrationChecklistPanel`).
-- [ ] Pipeline post-process legacy à parité complète (pixel/glitch/vignette exacts).
-- [ ] Audio runtime branché (au-delà du scaffold d’UI/état).
-- [ ] MIDI runtime branché.
-- [ ] Export runtime branché.
-- [ ] Persistance complète shader + audio + vidéo réellement connectée dans le flux principal.
+- [x] Pipeline post-process legacy branché côté React (pixel/glitch/vignette), parité fine restant à calibrer.
+- [x] Audio runtime branché (au-delà du scaffold d’UI/état).
+- [x] MIDI runtime branché.
+- [x] Export runtime branché.
+- [x] Persistance complète shader + audio + vidéo connectée dans le flux principal.
 
 ### 0.2 Corrections de statut par rapport aux itérations précédentes
 - [x] `ShaderControls` est stabilisé et typecheckable.
 - [x] La checklist migration est visible dans l’UI.
 - [x] Le snapshot legacy est visible dans l’UI.
-- [ ] “Audio/export migré” est **à requalifier en partiel** : composant non branché dans la page, sans service runtime.
-- [ ] “Persistance complète migrée” est **à requalifier en partiel** : hook limité aux `ShaderParams` et non intégré à la page.
+- [x] Audio/export branchés dans `ShaderStudioPage` avec services runtime React (`WebAudio`, `MediaRecorder`).
+- [x] Persistance unifiée branchée dans le flux principal (shader + audio + vidéo + MIDI + migration clé legacy).
 
 ---
 
@@ -108,34 +108,34 @@ La migration est considérée terminée uniquement si :
 ## Phase A — Stabilisation architecture
 - [ ] Créer la structure finale `features/shader-studio/{services,state,hooks,components,config,types}` avec séparation stricte runtime/UI.
 - [ ] Introduire un store unique (Zustand ou reducer) pour shader/audio/midi/export.
-- [ ] Brancher `useStudioPersistence` (ou son remplaçant) dans le flux principal.
-- [ ] Ajouter versioning de persistance + migration automatique des schémas legacy.
+- [x] Brancher `useStudioPersistence` (ou son remplaçant) dans le flux principal.
+- [x] Ajouter versioning de persistance + migration automatique des schémas legacy.
 - [ ] Supprimer les duplications d’état entre composants.
 
 ## Phase B — Parité visuelle shader
 - [x] Stabiliser `ShaderControls` (suppression erreurs TS bloquantes).
 - [x] Migrer le socle runtime Babylon React (scene/camera/mesh/uniforms principaux).
 - [ ] Mapper 100% des géométries legacy encore absentes.
-- [ ] Refaire pipeline post-FX à l’ordre/intensité legacy.
+- [ ] Finaliser calibration de parité pixel/glitch/vignette vs rendu legacy (ordre/intensité exacts).
 - [ ] Ajouter overlay d’erreurs shader compile/runtime.
 - [ ] Ajouter presets visuels React (CRUD + restore).
 
 ## Phase C — Audio React complet
-- [ ] Implémenter `audioEngineService` Web Audio.
-- [ ] Brancher micro + fichier + pause/reprise.
+- [x] Implémenter runtime Web Audio React.
+- [x] Brancher micro live dans le flux principal.
 - [ ] Calculer FFT + smoothing + beat detect.
 - [ ] Connecter mapping bass/mid/high aux uniforms shader.
 - [ ] Ajouter tests d’intégration audio simulée.
 
 ## Phase D — MIDI React complet
-- [ ] Implémenter hook de lifecycle Web MIDI.
+- [x] Implémenter hook de lifecycle Web MIDI.
 - [ ] Ajouter MIDI learn par contrôle.
 - [ ] Ajouter table mapping éditable + persistée.
 - [ ] Gérer reconnexion/déconnexion robustement.
 - [ ] Ajouter tests Web MIDI mockés.
 
 ## Phase E — Export & recording
-- [ ] Implémenter service export vidéo (MediaRecorder).
+- [x] Implémenter service export vidéo (MediaRecorder).
 - [ ] Ajouter progression + cancel + états erreur.
 - [ ] Ajouter export image PNG + export code shader.
 - [ ] Vérifier compatibilité navigateurs supportés.
