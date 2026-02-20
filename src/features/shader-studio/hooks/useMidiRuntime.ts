@@ -18,7 +18,7 @@ export function useMidiRuntime(
     let active = true;
     const listeners: Array<{ input: MIDIInput; fn: (event: MIDIMessageEvent) => void }> = [];
 
-    navigator.requestMIDIAccess().then((access) => {
+    import('./midiRuntime').then(({ requestMidiAccess }) => requestMidiAccess()).then((access) => {
       if (!active) return;
       setStatus(`MIDI connecté (${access.inputs.size} entrée${access.inputs.size > 1 ? 's' : ''})`);
       access.inputs.forEach((input) => {
