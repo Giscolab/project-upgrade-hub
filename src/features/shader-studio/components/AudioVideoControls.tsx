@@ -22,7 +22,7 @@ const AUDIO_TARGETS: AudioReactiveSettings['mapBassTo'][] = ['displacement', 'sp
 
 export default function AudioVideoControls({ audio, video, midiStatus, webgpuStatus, onAudioChange, onVideoChange, onStartAudio, onStopAudio, onExportVideo, onExportShadertoy, onRunWebGPU, onToggleMidi }: AudioVideoControlsProps) {
   return (
-    <aside className="glass-panel absolute left-4 top-20 z-30 max-h-[calc(100vh-10rem)] w-80 space-y-4 overflow-auto rounded-xl p-4">
+    <aside className="glass-panel absolute left-4 bottom-14 z-30 max-h-[40vh] w-80 space-y-4 overflow-auto rounded-xl p-4">
       <h2 className="text-sm font-semibold">Audio / Export (migration)</h2>
 
       <div className="flex flex-wrap gap-2">
