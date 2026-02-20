@@ -13,7 +13,7 @@ import { useMidiRuntime } from './hooks/useMidiRuntime';
 import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from './config/studioDefaults';
 import { exportShadertoyShader } from './services/shadertoyExportService';
 import { exportShaderSource } from './services/shaderExportService';
-import { downloadBlob, recordCanvasVideo } from './services/videoExportService';
+import { downloadBlob, exportCanvasPng, recordCanvasVideo } from './services/videoExportService';
 import { WebGPUComputeService } from './services/webgpuComputeService';
 import { DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 import { StudioState } from './types';
@@ -265,6 +265,23 @@ export default function ShaderStudioPage() {
   }, [presetLibrary, selectedPresetName]);
 
   const handleCancelExportVideo = useCallback(() => exportAbortControllerRef.current?.abort(), []);
+  const handleExportPng = useCallback(async () => {
+    if (!canvasEl) {
+      setExportStatus('Export PNG impossible: canvas indisponible.');
+      return;
+    }
+
+    setExportStatus('Export PNG en cours...');
+
+    try {
+      const blob = await exportCanvasPng(canvasEl);
+      downloadBlob(blob, `shader-studio-${Date.now()}.png`);
+      setExportStatus('Export PNG terminé.');
+    } catch (error) {
+      setExportStatus(`Erreur export PNG: ${error instanceof Error ? error.message : 'inconnue'}`);
+    }
+  }, [canvasEl]);
+
   const handleExportShadertoy = useCallback(() => exportShadertoyShader(state.shader, state.shaderToy.channels), [state.shader, state.shaderToy.channels]);
 
   const handleCompile = useCallback(() => {
@@ -378,6 +395,7 @@ export default function ShaderStudioPage() {
         })}
         onExportVideo={handleExportVideo}
         onCancelExportVideo={handleCancelExportVideo}
+        onExportPng={handleExportPng}
         onExportShadertoy={handleExportShadertoy}
         onRunWebGPU={handleRunWebGPU}
         onToggleMidi={() => updateState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}

@@ -10,6 +10,34 @@ export interface RecordCanvasVideoOptions {
   onProgress?: (progress: number) => void;
 }
 
+export async function exportCanvasPng(canvas: HTMLCanvasElement): Promise<Blob> {
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((result) => resolve(result), 'image/png');
+  });
+
+  if (blob) {
+    return blob;
+  }
+
+  const dataUrl = canvas.toDataURL('image/png');
+  if (!dataUrl.startsWith('data:image/png')) {
+    throw new Error('PNG export fallback failed while reading canvas data URL.');
+  }
+
+  const [header, base64Data] = dataUrl.split(',');
+  if (!header || !base64Data) {
+    throw new Error('PNG export fallback returned malformed data.');
+  }
+
+  const binary = atob(base64Data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return new Blob([bytes], { type: 'image/png' });
+}
+
 function stopStreamTracks(stream: MediaStream) {
   stream.getTracks().forEach((track) => track.stop());
 }

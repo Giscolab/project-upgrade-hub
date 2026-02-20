@@ -40,7 +40,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [ ] Finir MIDI learn + persistance de la table de mapping.
 
 ### Export/Persistance
-- [ ] Finaliser l’export image PNG (parité legacy).
+- [x] Finaliser l’export image PNG (parité legacy).
 - [x] Ajouter undo/redo.
 - [x] Ajouter presets nommés (avec versioning).
 
@@ -69,7 +69,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 ### D. Export/Persistance
 - [x] Export vidéo + progression + annulation.
 - [x] Export ShaderToy branché.
-- [ ] Export image PNG (parité legacy) finalisé.
+- [x] Export image PNG (parité legacy) finalisé.
 - [x] Persistance versionnée état studio.
 - [x] Undo/redo + presets nommés.
 
@@ -125,12 +125,12 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [ ] Gate 7/7 (suppression)
 
 #### `ShadertoyExporter.js`
-- [ ] Gate 1/7
-- [ ] Gate 2/7
-- [ ] Gate 3/7
-- [ ] Gate 4/7
-- [ ] Gate 5/7
-- [ ] Gate 6/7
+- [x] Gate 1/7 — Inventaire figé (bridge legacy + API documentée)
+- [x] Gate 2/7 — Mapping legacy → React/TS documenté
+- [x] Gate 3/7 — Preuve de parité: `docs/migration-evidence/shadertoy-exporter-parity.md`
+- [x] Gate 4/7 — `migrationPlan.ts` référencé avec preuve explicite
+- [x] Gate 5/7 — Roadmap/évidence mises à jour
+- [ ] Gate 6/7 — PR non encore fusionnée sur `main` (en cours dans cette PR)
 - [ ] Gate 7/7 (suppression)
 
 #### `WebGPUCompute.js`
@@ -161,13 +161,15 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [ ] Gate 7/7 (suppression)
 
 #### `main.js`
-- [ ] Gate 1/7
-- [ ] Gate 2/7
-- [ ] Gate 3/7
-- [ ] Gate 4/7
-- [ ] Gate 5/7
-- [ ] Gate 6/7
+- [x] Gate 1/7 — Inventaire figé (entrypoint + cycle dispose HMR)
+- [x] Gate 2/7 — Mapping legacy → React/TS documenté
+- [x] Gate 3/7 — Preuve de parité: `docs/migration-evidence/main-js-parity.md`
+- [x] Gate 4/7 — `migrationPlan.ts` référencé avec preuve explicite
+- [x] Gate 5/7 — Roadmap/évidence mises à jour
+- [ ] Gate 6/7 — PR non encore fusionnée sur `main` (en cours dans cette PR)
 - [ ] Gate 7/7 (suppression)
+
+> Conformément à la gouvernance (section 5), la suppression des fichiers legacy (`Gate 7`) sera faite via une PR dédiée après validation et fusion des Gates 1–6.
 
 ## 5) Gouvernance PR migration
 
