@@ -23,25 +23,46 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [ ] Parité fine complète UI/FX legacy ↔ React (reste à finaliser).
 - [ ] Suppression contrôlée des modules legacy après preuve de couverture 100%.
 
+## 2.1) Focus actuel (mode `priorities_only`)
+
+### Parité visuelle/graphique
+- [ ] Finaliser la parité post-process (ordre + intensité vs legacy).
+- [x] Terminer les channels ShaderToy avancés (textures multiples).
+- [ ] Valider les presets visuels pour garantir le même rendu.
+
+### UI contrôles
+- [ ] Compléter les contrôles texture/blend.
+- [x] Ajouter les raccourcis/actions de migration avec liens directs par item.
+
+### Audio/MIDI
+- [x] Ajouter source audio fichier + pause/reprise.
+- [x] Implémenter beat detect + calibration UI.
+- [ ] Finir MIDI learn + persistance de la table de mapping.
+
+### Export/Persistance
+- [ ] Finaliser l’export image PNG (parité legacy).
+- [x] Ajouter undo/redo.
+- [x] Ajouter presets nommés (avec versioning).
+
 ## 3) Plan par domaines (cases à cocher)
 
 ### A. Runtime graphique
 - [x] Scene/camera/mesh/uniforms principaux migrés.
 - [x] Overlay erreurs shader/runtime visible dans l’UI.
 - [ ] Parité stricte post-process (ordre/intensité) vs legacy.
-- [ ] Channels ShaderToy avancés (textures multiples) finalisés.
+- [x] Channels ShaderToy avancés (textures multiples) finalisés.
 - [ ] Presets visuels complets + validation parité rendu.
 
 ### B. Contrôles UI
 - [x] Contrôles principaux geometry/noise/sliders/toggles migrés.
 - [x] Contrôles material avancés (metalness/fresnel/rim) complets.
 - [ ] Contrôles texture/blend complets.
-- [ ] Raccourcis actions migration (liens directs par item) complets.
+- [x] Raccourcis actions migration (liens directs par item) complets.
 
 ### C. Audio/MIDI
 - [x] Audio live branché (micro + mapping bands).
-- [ ] Source audio fichier + pause/reprise.
-- [ ] Beat detect + calibration UI.
+- [x] Source audio fichier + pause/reprise.
+- [x] Beat detect + calibration UI.
 - [x] MIDI lifecycle/CC branché.
 - [ ] MIDI learn complet + persistance table de mapping.
 
@@ -50,7 +71,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [x] Export ShaderToy branché.
 - [ ] Export image PNG (parité legacy) finalisé.
 - [x] Persistance versionnée état studio.
-- [ ] Undo/redo + presets nommés.
+- [x] Undo/redo + presets nommés.
 
 ## 4) Système “100% avant suppression” (checklist de fusion)
 

@@ -3,8 +3,8 @@ import { DEFAULT_SHADER_PARAMS, ShaderParams } from '@/types/shader';
 import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from '../config/studioDefaults';
 import { StudioState } from '../types';
 
-const STORAGE_KEY = 'shader-studio-react-state-v2';
-const LEGACY_STORAGE_KEY = 'shader-studio-react-state';
+const STORAGE_KEY = 'shader-studio-react-state-v3';
+const LEGACY_STORAGE_KEYS = ['shader-studio-react-state-v2', 'shader-studio-react-state'];
 
 interface PersistedStudioState {
   version: number;
@@ -24,6 +24,10 @@ function migrateLegacyPayload(raw: unknown): PersistedStudioState | null {
       data: {
         ...DEFAULT_STUDIO_STATE,
         ...(raw.data as Partial<StudioState>),
+        audio: {
+          ...DEFAULT_STUDIO_STATE.audio,
+          ...((raw.data as Partial<StudioState>).audio ?? {}),
+        },
         shader: {
           ...DEFAULT_SHADER_PARAMS,
           ...((raw.data as Partial<StudioState>).shader ?? {}),
@@ -45,7 +49,10 @@ function migrateLegacyPayload(raw: unknown): PersistedStudioState | null {
 }
 
 export function readPersistedStudioState(): StudioState {
-  const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
+  const raw = localStorage.getItem(STORAGE_KEY)
+    ?? LEGACY_STORAGE_KEYS.map((key) => localStorage.getItem(key)).find(Boolean)
+    ?? null;
+
   if (!raw) return DEFAULT_STUDIO_STATE;
 
   try {
@@ -54,6 +61,10 @@ export function readPersistedStudioState(): StudioState {
     return {
       ...DEFAULT_STUDIO_STATE,
       ...migrated.data,
+      audio: {
+        ...DEFAULT_STUDIO_STATE.audio,
+        ...migrated.data.audio,
+      },
       shader: {
         ...DEFAULT_SHADER_PARAMS,
         ...migrated.data.shader,

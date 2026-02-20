@@ -1,11 +1,14 @@
 export interface AudioReactiveSettings {
   enabled: boolean;
+  source: 'mic' | 'file';
+  fileName: string | null;
   mapBassTo: 'displacement' | 'speed' | 'scale' | 'none';
   mapMidTo: 'displacement' | 'speed' | 'scale' | 'none';
   mapHighTo: 'displacement' | 'speed' | 'scale' | 'none';
   gainBass: number;
   gainMid: number;
   gainHigh: number;
+  beatThreshold: number;
 }
 
 export interface VideoExportSettings {

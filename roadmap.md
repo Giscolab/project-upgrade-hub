@@ -8,16 +8,29 @@ Ce fichier est un pointeur opérationnel vers la source de vérité:
 - Chaque bloc legacy doit être mappé à sa cible React/TS.
 - Toute différence de comportement doit être documentée et validée.
 
-## État global actuel (résumé)
-- Runtime React principal branché (scène Babylon, erreurs runtime/shader, audio live, MIDI CC, export vidéo, export ShaderToy, diagnostic WebGPU, persistance versionnée).
-- Reste à finaliser: parité UI/FX fine, contrôles texture/blend, source audio fichier + beat detect, MIDI learn persistant, export PNG, undo/redo + presets nommés.
-- Retrait des modules legacy reporté jusqu’à validation complète par fichier via la matrice Gate 1/7 → 7/7.
+## Statut
+- `priorities_only`
 
-## Domaines prioritaires restants
-1. **Runtime graphique**: parité post-process stricte, channels ShaderToy avancés, validation presets visuels.
-2. **Contrôles UI**: texture/blend complets, raccourcis de migration item par item.
-3. **Audio/MIDI**: lecture fichier audio, calibration beat, MIDI learn + table de mapping persistée.
-4. **Export/Persistance**: export PNG, undo/redo, presets nommés.
+## Priorités (court terme)
+
+### Parité visuelle/graphique
+- Finaliser la parité post-process (ordre + intensité vs legacy).
+- ✅ Terminer les channels ShaderToy avancés (textures multiples).
+- Valider les presets visuels pour garantir le même rendu.
+
+### UI contrôles
+- Compléter les contrôles texture/blend.
+- ✅ Ajouter les raccourcis/actions de migration avec liens directs par item.
+
+### Audio/MIDI
+- ✅ Ajouter source audio fichier + pause/reprise.
+- ✅ Implémenter beat detect + calibration UI.
+- Finir MIDI learn + persistance de la table de mapping.
+
+### Export/Persistance
+- Finaliser l’export image PNG (parité legacy).
+- ✅ Ajouter undo/redo.
+- ✅ Ajouter presets nommés (avec versioning).
 
 ## Discipline PR migration
 Chaque PR de migration doit:

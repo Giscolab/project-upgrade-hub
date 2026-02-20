@@ -1,18 +1,21 @@
 import { DEFAULT_SHADER_PARAMS } from '@/types/shader';
 import { StudioState } from '../types';
 
-export const STUDIO_STATE_VERSION = 2;
+export const STUDIO_STATE_VERSION = 3;
 
 export const DEFAULT_STUDIO_STATE: StudioState = {
   shader: DEFAULT_SHADER_PARAMS,
   audio: {
     enabled: false,
+    source: 'mic',
+    fileName: null,
     mapBassTo: 'displacement',
     mapMidTo: 'speed',
     mapHighTo: 'scale',
     gainBass: 1,
     gainMid: 1,
     gainHigh: 1,
+    beatThreshold: 0.35,
   },
   video: {
     duration: 8,

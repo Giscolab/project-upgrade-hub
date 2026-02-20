@@ -54,8 +54,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     remainingWork: [
       'Add texture layers and blend mode controls',
       'Add shader code editor and validation actions',
-      'Connect migration checklist entries to deep links/CTAs in controls',
-      'Link each remaining migration item to actionable UI shortcuts',
+      'Migration checklist entries now expose deep links/CTAs to relevant controls',
       'Finalize expert controls parity (material, texture, shader editor)',
     ],
     validationChecks: [
@@ -76,8 +75,8 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Live mic FFT bands map to shader params in React flow',
     ],
     remainingWork: [
-      'Add file source selector + pause/resume controls',
-      'Implement beat flash and threshold calibration UI',
+      'File source selector + pause/reprise controls wired in React panel',
+      'Beat pulse detect + threshold calibration slider wired',
     ],
     validationChecks: [
       'FFT updates at stable frame rate',
@@ -142,7 +141,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Legacy JS bridge files now proxy to React-first services (App, main, export, WebGPU)',
     ],
     remainingWork: [
-      'Connecter les channels ShaderToy avancés (textures multiples) dans l UI',
+      'Channels ShaderToy avancés (textures multiples) configurables dans l UI',
       'Ajouter un affichage de trajectoires simulées WebGPU dans le rendu principal',
     ],
     validationChecks: [
@@ -159,10 +158,12 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     completedWork: [
       'Local storage persistence for shader/audio/video states',
       'Versioned persistence payload with legacy key migration',
+      'Named preset save/load/delete flow added with version tagging',
+      'Undo/redo actions now available in UI and keyboard shortcuts',
     ],
     remainingWork: [
-      'Add named preset manager and versioning',
-      'Add undo/redo stack with bounded history',
+      'Named preset manager with versioned payload persisted in localStorage',
+      'Undo/redo stack with bounded history and keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Y)',
       'Add migration layer for old storage schema',
     ],
     validationChecks: [

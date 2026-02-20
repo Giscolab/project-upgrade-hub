@@ -11,15 +11,33 @@ interface AudioVideoControlsProps {
   exportProgress: number;
   exportStatus: string | null;
   exportInProgress: boolean;
+  beatPulse: boolean;
+  audioPaused: boolean;
+  activeAudioSource: string;
+  shaderToyChannels: Array<string | null>;
+  presetNames: string[];
+  selectedPresetName: string;
+  canUndo: boolean;
+  canRedo: boolean;
   onAudioChange: (audio: AudioReactiveSettings) => void;
   onVideoChange: (video: VideoExportSettings) => void;
-  onStartAudio: () => void;
+  onStartMicrophone: () => void;
+  onSelectAudioFile: (file: File) => void;
+  onPauseAudio: () => void;
+  onResumeAudio: () => void;
   onStopAudio: () => void;
+  onUpdateShaderToyChannel: (index: number, value: string | null) => void;
   onExportVideo: () => void;
   onCancelExportVideo: () => void;
   onExportShadertoy: () => void;
   onRunWebGPU: () => void;
   onToggleMidi: () => void;
+  onPresetNameChange: (name: string) => void;
+  onSavePreset: () => void;
+  onLoadPreset: () => void;
+  onDeletePreset: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
 }
 
 const AUDIO_TARGETS: AudioReactiveSettings['mapBassTo'][] = ['displacement', 'speed', 'scale', 'none'];
@@ -34,48 +52,67 @@ export default function AudioVideoControls({
   exportProgress,
   exportStatus,
   exportInProgress,
+  beatPulse,
+  audioPaused,
+  activeAudioSource,
+  shaderToyChannels,
+  presetNames,
+  selectedPresetName,
+  canUndo,
+  canRedo,
   onAudioChange,
   onVideoChange,
-  onStartAudio,
+  onStartMicrophone,
+  onSelectAudioFile,
+  onPauseAudio,
+  onResumeAudio,
   onStopAudio,
+  onUpdateShaderToyChannel,
   onExportVideo,
   onCancelExportVideo,
   onExportShadertoy,
   onRunWebGPU,
   onToggleMidi,
+  onPresetNameChange,
+  onSavePreset,
+  onLoadPreset,
+  onDeletePreset,
+  onUndo,
+  onRedo,
 }: AudioVideoControlsProps) {
   return (
-    <aside className="glass-panel absolute left-4 bottom-14 z-30 max-h-[40vh] w-80 space-y-4 overflow-auto rounded-xl p-4">
+    <aside id="audio-controls" className="glass-panel absolute left-4 bottom-14 z-30 max-h-[56vh] w-96 space-y-4 overflow-auto rounded-xl p-4">
       <h2 className="text-sm font-semibold">Audio / Export (migration)</h2>
 
       <div className="flex flex-wrap gap-2">
-        <button className="rounded bg-primary px-2 py-1 text-xs text-primary-foreground" onClick={audio.enabled ? onStopAudio : onStartAudio}>
-          {audio.enabled ? 'Couper audio' : 'Activer micro'}
+        <button className="rounded bg-primary px-2 py-1 text-xs text-primary-foreground" onClick={onStartMicrophone}>
+          Activer micro
         </button>
-        <button
-          className="rounded bg-accent px-2 py-1 text-xs text-accent-foreground disabled:cursor-not-allowed disabled:opacity-60"
-          onClick={onExportVideo}
-          disabled={exportInProgress}
-        >
-          {exportInProgress ? 'Export en cours…' : 'Export vidéo'}
+        <label className="rounded bg-secondary px-2 py-1 text-xs cursor-pointer">
+          Audio fichier
+          <input type="file" accept="audio/*" className="hidden" onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) onSelectAudioFile(file);
+            event.target.value = '';
+          }} />
+        </label>
+        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={audioPaused ? onResumeAudio : onPauseAudio}>
+          {audioPaused ? 'Reprendre' : 'Pause'}
         </button>
-        {exportInProgress && (
-          <button className="rounded bg-destructive px-2 py-1 text-xs text-destructive-foreground" onClick={onCancelExportVideo}>
-            Annuler export
-          </button>
-        )}
-        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onExportShadertoy}>
-          Export ShaderToy
-        </button>
-        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onRunWebGPU}>
-          Test WebGPU
-        </button>
-        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onToggleMidi}>
-          Toggle MIDI
+        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onStopAudio}>
+          Stop
         </button>
       </div>
-      <p className="text-xs text-muted-foreground">{midiStatus}</p>
-      <p className="text-xs text-muted-foreground">{webgpuStatus}</p>
+
+      <p className="text-xs text-muted-foreground">Source audio: {activeAudioSource}</p>
+      <p className={`text-xs ${beatPulse ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
+        Beat detect: {beatPulse ? 'pulse détecté' : 'en attente'}
+      </p>
+
+      <div className="space-y-1">
+        <Label>Seuil beat detect</Label>
+        <Slider min={0.05} max={1} step={0.01} value={[audio.beatThreshold]} onValueChange={(v) => onAudioChange({ ...audio, beatThreshold: v[0] })} />
+      </div>
 
       <div className="space-y-1">
         <Label>Bass mapping</Label>
@@ -111,9 +148,35 @@ export default function AudioVideoControls({
         <Slider min={0} max={8} step={0.1} value={[audio.gainMid]} onValueChange={(v) => onAudioChange({ ...audio, gainMid: v[0] })} />
       </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs"><Label>Gain High</Label><span>{audio.gainHigh.toFixed(2)}</span></div>
-        <Slider min={0} max={8} step={0.1} value={[audio.gainHigh]} onValueChange={(v) => onAudioChange({ ...audio, gainHigh: v[0] })} />
+      <div id="shadertoy-channels" className="space-y-2 border-t border-border/50 pt-3">
+        <Label className="text-xs">ShaderToy channels (textures multiples)</Label>
+        {shaderToyChannels.map((channel, index) => (
+          <input
+            key={index}
+            value={channel ?? ''}
+            placeholder={`iChannel${index} URL texture`}
+            className="w-full rounded border border-border/60 bg-transparent px-2 py-1 text-xs"
+            onChange={(event) => onUpdateShaderToyChannel(index, event.target.value || null)}
+          />
+        ))}
+      </div>
+
+      <div id="preset-controls" className="space-y-2 border-t border-border/50 pt-3">
+        <Label className="text-xs">Presets nommés (v3)</Label>
+        <input
+          className="w-full rounded border border-border/60 bg-transparent px-2 py-1 text-xs"
+          value={selectedPresetName}
+          placeholder="Nom du preset"
+          onChange={(event) => onPresetNameChange(event.target.value)}
+        />
+        <div className="flex flex-wrap gap-2">
+          <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onSavePreset}>Sauver</button>
+          <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onLoadPreset}>Charger</button>
+          <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onDeletePreset}>Supprimer</button>
+          <button className="rounded bg-secondary px-2 py-1 text-xs disabled:opacity-50" onClick={onUndo} disabled={!canUndo}>Undo</button>
+          <button className="rounded bg-secondary px-2 py-1 text-xs disabled:opacity-50" onClick={onRedo} disabled={!canRedo}>Redo</button>
+        </div>
+        {presetNames.length > 0 && <p className="text-xs text-muted-foreground">Presets: {presetNames.join(', ')}</p>}
       </div>
 
       <div className="space-y-1 border-t border-border/50 pt-3">
@@ -142,6 +205,22 @@ export default function AudioVideoControls({
         </Select>
       </div>
 
+      <div className="flex flex-wrap gap-2 border-t border-border/50 pt-3">
+        <button className="rounded bg-accent px-2 py-1 text-xs text-accent-foreground disabled:cursor-not-allowed disabled:opacity-60" onClick={onExportVideo} disabled={exportInProgress}>
+          {exportInProgress ? 'Export en cours…' : 'Export vidéo'}
+        </button>
+        {exportInProgress && (
+          <button className="rounded bg-destructive px-2 py-1 text-xs text-destructive-foreground" onClick={onCancelExportVideo}>
+            Annuler export
+          </button>
+        )}
+        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onExportShadertoy}>Export ShaderToy</button>
+        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onRunWebGPU}>Test WebGPU</button>
+        <button id="midi-toggle" className="rounded bg-secondary px-2 py-1 text-xs" onClick={onToggleMidi}>Toggle MIDI</button>
+      </div>
+
+      <p className="text-xs text-muted-foreground">{midiStatus}</p>
+      <p className="text-xs text-muted-foreground">{webgpuStatus}</p>
       <p className="text-xs text-muted-foreground">{video.fps} fps · {video.duration}s · {video.resolution}</p>
       <p className="text-xs text-muted-foreground">Progression export: {exportProgress}%</p>
       {exportStatus && <p className="text-xs text-muted-foreground">{exportStatus}</p>}
