@@ -1,208 +1,159 @@
 # Roadmap exhaustive — Migration complète vers React (Shader Studio)
 
-## 0) État recalculé après réanalyse complète du repository
+Ce document est la source de vérité pour migrer **sans perte fonctionnelle** depuis les fichiers legacy vers React.
 
-### 0.1 Lecture de réalité (ce qui est vraiment fait)
-- [x] Application servie par une entrée React (`src/main.tsx`) et routage React (`src/App.tsx`).
-- [x] Écran principal unifié React (`src/features/shader-studio/ShaderStudioPage.tsx`).
-- [x] Canvas Babylon encapsulé React (`src/components/shader/BabylonCanvas.tsx`) avec uniforms runtime.
-- [x] Contrôles shader React de base opérationnels (`ShaderControls.tsx`).
-- [x] Composants de visibilité migration exposés à l’écran (`LegacyMigrationSummary`, `MigrationChecklistPanel`).
-- [x] Pipeline post-process legacy branché côté React (pixel/glitch/vignette), parité fine restant à calibrer.
-- [x] Audio runtime branché (au-delà du scaffold d’UI/état).
-- [x] MIDI runtime branché.
-- [x] Export runtime branché.
-- [x] Export ShaderToy React branché + service WebGPU compute React de diagnostic.
-- [x] Persistance complète shader + audio + vidéo connectée dans le flux principal.
+## 1) Règle de migration (non négociable)
 
-### 0.2 Corrections de statut par rapport aux itérations précédentes
-- [x] `ShaderControls` est stabilisé et typecheckable.
-- [x] La checklist migration est visible dans l’UI.
-- [x] Le snapshot legacy est visible dans l’UI.
-- [x] Audio/export branchés dans `ShaderStudioPage` avec services runtime React (`WebAudio`, `MediaRecorder`).
-- [x] Persistance unifiée branchée dans le flux principal (shader + audio + vidéo + MIDI + migration clé legacy).
-- [x] Correctif bootstrap React appliqué (`#root` ajouté dans `index.html`) pour éliminer `createRoot(...): Target container is not a DOM element`.
+Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 
----
+- Chaque bloc legacy doit être mappé vers un bloc React/TS cible.
+- Aucune suppression “au feeling”.
+- Toute différence de comportement doit être documentée et validée.
 
-## 1) Objectif produit (définition de fin)
-La migration est considérée terminée uniquement si :
-1. Toute orchestration runtime passe par composants/hooks/services React typés.
-2. Les modules legacy JS (`App.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `WebGPUCompute.js`, `ShadertoyExporter.js`) ne pilotent plus l’application en production.
-3. Les fonctionnalités historiques critiques sont présentes (ou explicitement supprimées avec décision documentée).
-4. L’architecture cible est stable et maintenable (`features/`, `components/`, `hooks/`, `services/`, `state/`, `types/`).
-5. Une stratégie de tests couvre rendu, interaction, persistance, audio/MIDI, export.
+## 2) État réel actuel (corrigé)
 
----
+- [x] Entrée React/Vite active (`src/main.tsx`, `src/App.tsx`, `src/pages/Index.tsx`).
+- [x] Runtime scène React actif (`ShaderStudioPage` + `BabylonCanvas`).
+- [x] Loader/erreurs runtime connectés au flux principal.
+- [x] Audio runtime branché (FFT bands utilisées côté React).
+- [x] MIDI runtime branché (événements CC connectés au flux React).
+- [x] Export vidéo React branché (progression + annulation).
+- [x] Export ShaderToy + diagnostic WebGPU disponibles.
+- [x] Persistance versionnée branchée sur l’état studio.
+- [ ] Parité fine complète UI/FX legacy ↔ React (reste à finaliser).
+- [ ] Suppression contrôlée des modules legacy après preuve de couverture 100%.
 
-## 2) Inventaire ultra exhaustif (legacy → React)
+## 3) Plan par domaines (cases à cocher)
 
-### 2.1 Boot, routing, shell app
-- **Legacy source**: `main.js` + initialisation legacy.
-- **React cible**: `src/main.tsx`, `src/App.tsx`, `src/pages/Index.tsx`.
-- **Statut**: ✅ **Migré intégralement**.
-- **Justification**: entrée, providers, routing et page principale sont React-first, avec conteneur DOM React explicitement présent (`#root`).
+### A. Runtime graphique
+- [x] Scene/camera/mesh/uniforms principaux migrés.
+- [x] Overlay erreurs shader/runtime visible dans l’UI.
+- [ ] Parité stricte post-process (ordre/intensité) vs legacy.
+- [ ] Channels ShaderToy avancés (textures multiples) finalisés.
+- [ ] Presets visuels complets + validation parité rendu.
 
-### 2.2 Runtime graphique (scene, mesh, shader)
-- **Legacy source**: `App.js`, `shaders.js`.
-- **React cible**: `src/components/shader/BabylonCanvas.tsx` + `src/features/shader-studio/*`.
-- **Statut**: 🟡 **Partiellement migré**.
-- **Migré**:
-  - lifecycle engine/scene/camera,
-  - uniforms principaux,
-  - changement de géométrie,
-  - scale + autorotation runtime.
-- **Restant critique**:
-  - pipeline post-FX complet à parité legacy,
-  - mode ShaderToy avancé/channels,
-  - surface d’erreurs shader (compile/runtime) en UI.
+### B. Contrôles UI
+- [x] Contrôles principaux geometry/noise/sliders/toggles migrés.
+- [ ] Contrôles material avancés (metalness/fresnel/rim) complets.
+- [ ] Contrôles texture/blend complets.
+- [ ] Raccourcis actions migration (liens directs par item) complets.
 
-**Décision roadmap (itération actuelle)**: conserver le runtime Babylon React comme base validée, puis traiter les 3 gaps critiques ci-dessus avant de reclasser ce bloc en ✅.
+### C. Audio/MIDI
+- [x] Audio live branché (micro + mapping bands).
+- [ ] Source audio fichier + pause/reprise.
+- [ ] Beat detect + calibration UI.
+- [x] MIDI lifecycle/CC branché.
+- [ ] MIDI learn complet + persistance table de mapping.
 
-### 2.3 Contrôles UI shader
-- **Legacy source**: sections Tweakpane de `App.js`.
-- **React cible**: `ShaderControls.tsx`.
-- **Statut**: 🟡 **Partiellement migré**.
-- **Migré**:
-  - sélecteurs geometry/noise,
-  - sliders principaux,
-  - toggles wireframe/autorotate/post-FX.
-- **Restant**:
-  - contrôles avancés material/texture,
-  - éditeur shader intégré,
-  - structuration panneaux expert (tabs/responsive).
+### D. Export/Persistance
+- [x] Export vidéo + progression + annulation.
+- [x] Export ShaderToy branché.
+- [ ] Export image PNG (parité legacy) finalisé.
+- [x] Persistance versionnée état studio.
+- [ ] Undo/redo + presets nommés.
 
-### 2.4 Audio
-- **Legacy source**: `AudioEngine.js`.
-- **React cible**: services + hooks audio dans `features/shader-studio`.
-- **Statut**: ⛔ **Non migré runtime** (scaffold seulement).
-- **Constat**: composant `AudioVideoControls` existe, mais pas de service WebAudio branché ni de mapping temps-réel effectif.
+## 4) Système “100% avant suppression” (checklist de fusion)
 
-### 2.5 MIDI
-- **Legacy source**: `MidiHandler.js`.
-- **React cible**: `hooks/useMidiMapping.ts` + panneau.
-- **Statut**: ⛔ **Non migré**.
-- **Constat**: hook/panneau MIDI final absent du flux principal.
+> À appliquer pour **chaque fichier legacy** avant retrait.
 
-### 2.6 Export vidéo/image
-- **Legacy source**: `VideoRecorder.js`, `ShadertoyExporter.js`.
-- **React cible**: services export + UI progression.
-- **Statut**: 🟡 **Partiellement migré**.
-- **Constat**: service MediaRecorder React branché, export ShaderToy React branché; progression/cancel export vidéo avancé restant à ajouter.
+### 4.1 Gate obligatoire (à 100%)
+- [ ] 1. Inventaire du fichier figé (fonctions/sections listées).
+- [ ] 2. Mapping legacy → React documenté (section par section).
+- [ ] 3. Preuve de parité fournie (test, capture, ou scénario validé).
+- [ ] 4. `migrationPlan.ts` mis à jour.
+- [ ] 5. Roadmap mise à jour (ce document + `roadmap.md`).
+- [ ] 6. PR fusionnée sur branche principale.
+- [ ] 7. Suppression du fichier legacy faite dans une PR dédiée.
 
-### 2.7 Persistance et état global
-- **Legacy source**: blocs localStorage/history de `App.js`.
-- **React cible**: state/store + hooks de persistance.
-- **Statut**: 🟡 **Partiel**.
-- **Constat**:
-  - hook de persistance limité à `ShaderParams`,
-  - pas de store unifié shader/audio/video/midi,
-  - pas de versioning de schéma + migration old keys.
+### 4.2 Matrice de suivi par fichier legacy
 
-### 2.8 Legacy adaptation / couverture
-- **Source**: `legacyConfig.ts`, `legacyAdapter.ts`, `migrationPlan.ts`.
-- **Statut**: 🟡 **Partiel**.
-- **Migré**: adaptation initiale de paramètres legacy vers `ShaderParams`.
-- **Restant**: augmenter la couverture des paramètres non mappés et fiabiliser la mesure “migré/restant”.
+#### `App.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-### 2.9 Compute WebGPU
-- **Legacy source**: `WebGPUCompute.js`.
-- **React cible**: `src/features/shader-studio/services/webgpuComputeService.ts` + actions React dans `ShaderStudioPage`.
-- **Statut**: 🟡 **Partiellement migré**.
-- **Migré**:
-  - service TypeScript WebGPU avec simulation particulaire,
-  - déclenchement de diagnostic depuis panneau React,
-  - remontée statut succès/erreur dans UI.
-- **Restant**:
-  - visualisation directe de la simulation WebGPU dans le rendu principal,
-  - scénarios de fallback multi-device plus complets.
+#### `AudioEngine.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
----
+#### `MidiHandler.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## 3) Plan d’exécution mis à jour (cases cochées uniquement si fait intégralement)
+#### `VideoRecorder.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## Phase A — Stabilisation architecture
-- [ ] Créer la structure finale `features/shader-studio/{services,state,hooks,components,config,types}` avec séparation stricte runtime/UI.
-- [ ] Introduire un store unique (Zustand ou reducer) pour shader/audio/midi/export.
-- [x] Brancher `useStudioPersistence` (ou son remplaçant) dans le flux principal.
-- [x] Ajouter versioning de persistance + migration automatique des schémas legacy.
-- [ ] Supprimer les duplications d’état entre composants.
+#### `ShadertoyExporter.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## Phase B — Parité visuelle shader
-- [x] Stabiliser `ShaderControls` (suppression erreurs TS bloquantes).
-- [x] Migrer le socle runtime Babylon React (scene/camera/mesh/uniforms principaux).
-- [ ] Mapper 100% des géométries legacy encore absentes.
-- [ ] Finaliser calibration de parité pixel/glitch/vignette vs rendu legacy (ordre/intensité exacts).
-- [ ] Ajouter overlay d’erreurs shader compile/runtime.
-- [ ] Finaliser mode ShaderToy avancé (channels, inputs multiples, comportement full-pass).
-- [ ] Ajouter presets visuels React (CRUD + restore).
+#### `WebGPUCompute.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## Phase C — Audio React complet
-- [x] Implémenter runtime Web Audio React.
-- [x] Brancher micro live dans le flux principal.
-- [ ] Calculer FFT + smoothing + beat detect.
-- [ ] Connecter mapping bass/mid/high aux uniforms shader.
-- [ ] Ajouter tests d’intégration audio simulée.
+#### `Config.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## Phase D — MIDI React complet
-- [x] Implémenter hook de lifecycle Web MIDI.
-- [ ] Ajouter MIDI learn par contrôle.
-- [ ] Ajouter table mapping éditable + persistée.
-- [ ] Gérer reconnexion/déconnexion robustement.
-- [ ] Ajouter tests Web MIDI mockés.
+#### `shaders.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## Phase E — Export & recording
-- [x] Implémenter service export vidéo (MediaRecorder).
-- [x] Ajouter progression + cancel + états erreur.
-- [ ] Ajouter export image PNG + export code shader (ShaderToy code exporté, PNG restant).
-- [ ] Vérifier compatibilité navigateurs supportés.
+#### `main.js`
+- [ ] Gate 1/7
+- [ ] Gate 2/7
+- [ ] Gate 3/7
+- [ ] Gate 4/7
+- [ ] Gate 5/7
+- [ ] Gate 6/7
+- [ ] Gate 7/7 (suppression)
 
-## Phase F — Hardening & QA
-- [ ] Couvrir flows critiques en tests (unit + intégration + e2e ciblés).
-- [ ] Nettoyer/supprimer fichiers legacy non utilisés en prod.
-- [ ] Produire guide final de migration + changelog de fermeture.
-- [ ] Préparer release candidate React-only.
+## 5) Gouvernance PR migration
 
----
+Chaque PR de migration doit:
+1. Mettre à jour `src/features/shader-studio/config/migrationPlan.ts`.
+2. Mettre à jour `docs/REACT_MIGRATION_ROADMAP.md` et `roadmap.md`.
+3. Fournir checks/tests exécutés.
+4. Décrire clairement ce qui reste.
 
-## 4) Checklist d’acceptation finale
-
-### 4.1 Fonctionnel
-- [ ] Tous les contrôles UI React ont un effet visuel vérifié.
-- [ ] Reload restaure l’état complet (shader/audio/midi/export).
-- [ ] Audio mapping agit en temps réel sans freeze.
-- [ ] MIDI learn fonctionne (device branché/débranché).
-- [ ] Export vidéo/image génère des fichiers lisibles.
-
-### 4.2 Technique
-- [ ] Build, lint, typecheck, tests passent en CI.
-- [ ] Aucune erreur runtime console en scénario nominal.
-- [ ] Pas de fuite mémoire sur changements de scène/preset.
-- [ ] Temps de frame stable sur sessions longues.
-
-### 4.3 UX
-- [ ] Navigation clavier acceptable.
-- [ ] Lisibilité panneaux sur laptop et écrans plus petits.
-- [ ] États d’erreur explicites (permissions audio, shader fail, export fail, MIDI indisponible).
-
----
-
-## 5) Incident runtime traité (itération en cours)
-- **Erreur observée**: `Uncaught Error: createRoot(...): Target container is not a DOM element.`
-- **Cause racine**: `src/main.tsx` monte React sur `document.getElementById('root')`, mais `index.html` ne déclarait pas de noeud `id="root"`.
-- **Correction appliquée**: ajout de `<div id="root"></div>` dans `index.html` pour aligner le bootstrap React avec le runtime Vite.
-- **Impact migration**: le shell React devient réellement bootable dans le flux principal, ce qui débloque la validation des phases B→F en environnement navigateur.
-
-## 6) Gouvernance de migration
-- Chaque PR de migration doit :
-  1. mettre à jour `src/features/shader-studio/config/migrationPlan.ts`,
-  2. mettre à jour ce document `docs/REACT_MIGRATION_ROADMAP.md`,
-  3. fournir checks/tests,
-  4. expliciter ce qui reste.
-- Interdiction de marquer une case “faite” si la fonctionnalité n’est pas branchée dans le flux principal de production.
-
-
-## Mise à jour récente
-- Les fichiers legacy racine (`App.js`, `main.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `ShadertoyExporter.js`, `WebGPUCompute.js`, `Config.js`, `shaders.js`) ont été réécrits en ponts de compatibilité qui délèguent désormais au runtime React/TypeScript.
-- Le flux d'export vidéo React (`videoExportService` + `AudioVideoControls` + `ShaderStudioPage`) expose maintenant la progression temps-réel, l'annulation utilisateur et les états de succès/erreur sans quitter le flux principal.
-- Le panneau React expose aussi les réglages durée/résolution/codec pour rapprocher la parité avec les options legacy.
+Interdiction de cocher “fait” si ce n’est pas branché au flux principal de production.
