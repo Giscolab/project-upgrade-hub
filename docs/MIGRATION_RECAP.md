@@ -33,3 +33,7 @@ La migration sera considérée terminée uniquement si :
 - l’état est centralisé (shader/audio/midi/export) avec persistance versionnée,
 - la parité fonctionnelle est validée par tests + checks runtime,
 - les fichiers legacy restants sont soit supprimés, soit explicitement conservés avec justification produit.
+
+
+## Mise à jour récente
+- Les fichiers legacy racine (`App.js`, `main.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `ShadertoyExporter.js`, `WebGPUCompute.js`, `Config.js`, `shaders.js`) ont été réécrits en ponts de compatibilité qui délèguent désormais au runtime React/TypeScript.

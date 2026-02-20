@@ -118,6 +118,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     ],
     remainingWork: [
       'Integrate MediaRecorder capture workflow',
+      'Finalize cancel/progress state in React panel and propagate to legacy bridge',
       'Expose duration/codec/quality controls in React panel',
       'Add progress and cancel states',
     ],
@@ -137,6 +138,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Service TypeScript buildShadertoyShaderFromParams ajouté',
       'Bouton React Export ShaderToy branché au panneau Audio/Export',
       'Service WebGPUComputeService TypeScript branché à un bouton de diagnostic React',
+      'Legacy JS bridge files now proxy to React-first services (App, main, export, WebGPU)',
     ],
     remainingWork: [
       'Connecter les channels ShaderToy avancés (textures multiples) dans l UI',
