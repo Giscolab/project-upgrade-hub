@@ -13,7 +13,7 @@
 
 Le runtime principal est déjà branché sur l’application React/TypeScript (`src/main.tsx` → `src/App.tsx` → `src/pages/Index.tsx` → `ShaderStudioPage`).
 
-Sur le plan de migration, `migrationPlan.ts` indique **2 domaines done** (`audio-engine`, `preset-storage`) et **5 domaines in_progress** (`render-core`, `ui-controls`, `midi`, `video-export`, `shadertoy-webgpu`).
+Sur le plan de migration, `migrationPlan.ts` indique **2 domaines terminés** (`audio-engine`, `preset-storage`) et **5 domaines en cours** (`render-core`, `ui-controls`, `midi`, `video-export`, `shadertoy-webgpu`).
 
 Concrètement: le flux React est opérationnel pour le rendu, l’audio-réactivité, une partie MIDI, les exports et la persistance; la parité complète avec le legacy reste en cours sur certains contrôles/validations.  
 ➡️ Détail et suivi complet: `docs/REACT_MIGRATION_ROADMAP.md`.

@@ -25,7 +25,7 @@ describe('recordCanvasVideo', () => {
   const settings: VideoExportSettings = {
     duration: 1,
     compression: 'video/webm;codecs=vp9',
-    resolution: '1280x720',
+    resolution: '1920x1080',
     fps: 30,
   };
 
@@ -39,12 +39,20 @@ describe('recordCanvasVideo', () => {
     vi.unstubAllGlobals();
   });
 
-  it('reports progress and resolves to a blob', async () => {
-    const progress: number[] = [];
+  function createCanvasWithStream() {
+    const tracks = [{ stop: vi.fn() }, { stop: vi.fn() }];
     const canvas = document.createElement('canvas') as HTMLCanvasElement & {
       captureStream: (fps: number) => MediaStream;
     };
-    canvas.captureStream = vi.fn(() => ({ getTracks: () => [{ stop: vi.fn() }] } as unknown as MediaStream));
+    canvas.width = 800;
+    canvas.height = 600;
+    canvas.captureStream = vi.fn(() => ({ getTracks: () => tracks } as unknown as MediaStream));
+    return { canvas, tracks };
+  }
+
+  it('reports progress and resolves to a blob', async () => {
+    const progress: number[] = [];
+    const { canvas } = createCanvasWithStream();
 
     const promise = recordCanvasVideo(canvas, settings, {
       onProgress: (value) => progress.push(value),
@@ -59,18 +67,49 @@ describe('recordCanvasVideo', () => {
     expect(progress.some((value) => value > 0 && value < 100)).toBe(true);
   });
 
-  it('rejects with AbortError when export is cancelled', async () => {
+  it('restaure canvas.width et canvas.height après export réussi', async () => {
+    const { canvas } = createCanvasWithStream();
+
+    const promise = recordCanvasVideo(canvas, settings);
+
+    expect(canvas.width).toBe(1920);
+    expect(canvas.height).toBe(1080);
+
+    await vi.advanceTimersByTimeAsync(1200);
+    await promise;
+
+    expect(canvas.width).toBe(800);
+    expect(canvas.height).toBe(600);
+  });
+
+  it('restaure canvas.width et canvas.height après abort/annulation', async () => {
     const controller = new AbortController();
-    const canvas = document.createElement('canvas') as HTMLCanvasElement & {
-      captureStream: (fps: number) => MediaStream;
-    };
-    canvas.captureStream = vi.fn(() => ({ getTracks: () => [{ stop: vi.fn() }] } as unknown as MediaStream));
+    const { canvas } = createCanvasWithStream();
 
     const promise = recordCanvasVideo(canvas, settings, {
       signal: controller.signal,
     });
 
+    expect(canvas.width).toBe(1920);
+    expect(canvas.height).toBe(1080);
+
     controller.abort();
     await expect(promise).rejects.toMatchObject({ name: 'AbortError' });
+
+    expect(canvas.width).toBe(800);
+    expect(canvas.height).toBe(600);
+  });
+
+  it('appelle stop() sur toutes les tracks du stream après export', async () => {
+    const { canvas, tracks } = createCanvasWithStream();
+
+    const promise = recordCanvasVideo(canvas, settings);
+
+    await vi.advanceTimersByTimeAsync(1200);
+    await promise;
+
+    for (const track of tracks) {
+      expect(track.stop).toHaveBeenCalledTimes(1);
+    }
   });
 });
