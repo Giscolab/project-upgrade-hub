@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BabylonCanvas from '@/components/shader/BabylonCanvas';
 import GPULoader from '@/components/shader/GPULoader';
 import ShaderControls from './components/ShaderControls';
@@ -35,6 +35,10 @@ export default function ShaderStudioPage() {
 
   const { bands, start, stop } = useAudioReactiveRuntime(state.audio.enabled);
   const webgpuRef = useRef(new WebGPUComputeService());
+  const exportAbortControllerRef = useRef<AbortController | null>(null);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportStatus, setExportStatus] = useState<string | null>(null);
+  const [exportInProgress, setExportInProgress] = useState(false);
 
   const params = state.shader;
   const setParams = useCallback((updater: StudioState['shader'] | ((prev: StudioState['shader']) => StudioState['shader'])) => {
@@ -70,11 +74,39 @@ export default function ShaderStudioPage() {
     return next;
   }, [bands.bass, bands.high, bands.mid, params, state.audio]);
 
+  useEffect(() => () => exportAbortControllerRef.current?.abort(), []);
+
   const handleExportVideo = useCallback(async () => {
-    if (!canvasEl) return;
-    const blob = await recordCanvasVideo(canvasEl, state.video);
-    downloadBlob(blob, `shader-studio-${Date.now()}.webm`);
-  }, [canvasEl, state.video]);
+    if (!canvasEl || exportInProgress) return;
+
+    const abortController = new AbortController();
+    exportAbortControllerRef.current = abortController;
+    setExportInProgress(true);
+    setExportProgress(0);
+    setExportStatus('Capture vidéo en cours...');
+
+    try {
+      const blob = await recordCanvasVideo(canvasEl, state.video, {
+        signal: abortController.signal,
+        onProgress: setExportProgress,
+      });
+      downloadBlob(blob, `shader-studio-${Date.now()}.webm`);
+      setExportStatus('Export vidéo terminé.');
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setExportStatus('Export vidéo annulé.');
+      } else {
+        setExportStatus(`Erreur export vidéo: ${error instanceof Error ? error.message : 'inconnue'}`);
+      }
+    } finally {
+      exportAbortControllerRef.current = null;
+      setExportInProgress(false);
+    }
+  }, [canvasEl, exportInProgress, state.video]);
+
+  const handleCancelExportVideo = useCallback(() => {
+    exportAbortControllerRef.current?.abort();
+  }, []);
 
   const handleExportShadertoy = useCallback(() => {
     exportShadertoyShader(state.shader, state.shaderToy.channels);
@@ -148,6 +180,9 @@ export default function ShaderStudioPage() {
         video={state.video}
         midiStatus={midiStatus}
         webgpuStatus={webgpuStatus}
+        exportProgress={exportProgress}
+        exportStatus={exportStatus}
+        exportInProgress={exportInProgress}
         onAudioChange={(audio) => setState((prev) => ({ ...prev, audio }))}
         onVideoChange={(video) => setState((prev) => ({ ...prev, video }))}
         onStartAudio={() => {
@@ -159,6 +194,7 @@ export default function ShaderStudioPage() {
           stop();
         }}
         onExportVideo={handleExportVideo}
+        onCancelExportVideo={handleCancelExportVideo}
         onExportShadertoy={handleExportShadertoy}
         onRunWebGPU={handleRunWebGPU}
         onToggleMidi={() => setState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}
