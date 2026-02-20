@@ -40,7 +40,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [ ] Finir MIDI learn + persistance de la table de mapping.
 
 ### Export/Persistance
-- [ ] Finaliser l’export image PNG (parité legacy).
+- [x] Finaliser l’export image PNG (parité legacy).
 - [x] Ajouter undo/redo.
 - [x] Ajouter presets nommés (avec versioning).
 
@@ -69,7 +69,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 ### D. Export/Persistance
 - [x] Export vidéo + progression + annulation.
 - [x] Export ShaderToy branché.
-- [ ] Export image PNG (parité legacy) finalisé.
+- [x] Export image PNG (parité legacy) finalisé.
 - [x] Persistance versionnée état studio.
 - [x] Undo/redo + presets nommés.
 

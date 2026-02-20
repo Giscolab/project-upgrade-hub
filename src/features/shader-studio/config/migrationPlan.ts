@@ -117,6 +117,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Export action connected in Audio/Export panel',
       'MediaRecorder export now reports progress and supports cancellation via AbortController',
       'React panel now exposes duration/codec/resolution controls for video export',
+      'PNG export action is wired in the React panel with toBlob and toDataURL fallback support',
     ],
     remainingWork: [
       'Propagate export progress/cancel telemetry to legacy bridge compatibility layer',

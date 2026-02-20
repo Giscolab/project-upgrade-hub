@@ -29,6 +29,7 @@ interface AudioVideoControlsProps {
   onUpdateShaderToyChannel: (index: number, value: string | null) => void;
   onExportVideo: () => void;
   onCancelExportVideo: () => void;
+  onExportPng: () => void;
   onExportShadertoy: () => void;
   onRunWebGPU: () => void;
   onToggleMidi: () => void;
@@ -70,6 +71,7 @@ export default function AudioVideoControls({
   onUpdateShaderToyChannel,
   onExportVideo,
   onCancelExportVideo,
+  onExportPng,
   onExportShadertoy,
   onRunWebGPU,
   onToggleMidi,
@@ -214,6 +216,7 @@ export default function AudioVideoControls({
             Annuler export
           </button>
         )}
+        <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onExportPng}>Export PNG</button>
         <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onExportShadertoy}>Export ShaderToy</button>
         <button className="rounded bg-secondary px-2 py-1 text-xs" onClick={onRunWebGPU}>Test WebGPU</button>
         <button id="midi-toggle" className="rounded bg-secondary px-2 py-1 text-xs" onClick={onToggleMidi}>Toggle MIDI</button>
