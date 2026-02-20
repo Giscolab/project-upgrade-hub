@@ -1,85 +1,67 @@
-# 🎨 Shader Studio v5
+# 🎨 Shader Studio v5 (React Migration)
 
-> Un éditeur de shaders procéduraux "No-Code" haute performance, fonctionnant entièrement dans le navigateur avec WebGL.
+> Éditeur de shaders procéduraux en migration vers une architecture React + Vite.
 
 ![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![WebGL](https://img.shields.io/badge/WebGL-2.0-orange.svg)
 
-**Shader Studio** est un outil créatif permettant de concevoir des visuels génératifs complexes, réactifs à la musique, sans écrire une seule ligne de code GLSL. Il combine la puissance de Three.js avec une interface intuitive pour offrir une expérience de VJing et de création numérique accessible à tous.
+## ✅ État actuel du projet
 
-## ✨ Fonctionnalités Clés
+Le runtime **actuel** est React (entrée `src/main.tsx`) avec Vite.
 
-### 🧠 Moteur Génératif
-*   **18 Géométries Paramétriques** : Sphère, Tore, Klein Bottle, Ruban de Möbius, Cœur, Engrenage...
-*   **15 Algorithmes de Bruit** : Simplex, Voronoi, FBM, Domain Warping, Reaction-Diffusion, Mandelbrot...
-*   **22 Presets Visuels** : Cyberpunk, Lava Planet, Deep Ocean, Glitch Matrix...
+- Le code legacy (`App.js`, `main.js`, `style.css`, etc.) reste présent pour compatibilité et migration.
+- L'UI active est la page React `src/features/shader-studio/ShaderStudioPage.tsx`.
+- Lancer simplement `npx serve` à la racine peut échouer (notamment erreur MIME sur `main.tsx`) car ce n'est pas le flux recommandé pour Vite en source.
 
-### 🎵 Audio Réactivité (Audio Engine)
-*   Analyse spectrale en temps réel (FFT).
-*   Séparation des bandes **Bass / Mid / High**.
-*   **Mapping Dynamique** : Assignez n'importe quelle bande de fréquence à des paramètres visuels (Déplacement, Vitesse, Échelle).
-*   Détection de **BPM** et Flash sur le beat.
-*   Support Micro et Fichiers Audio (MP3, WAV, OGG).
+## 🚀 Lancer le projet correctement
 
-### 🎹 Contrôle MIDI
-*   **Support Web MIDI API** : Connectez vos contrôleurs physiques (Korg, Akai, etc.).
-*   **Mapping "Learn"** : Assignez facilement des potards aux paramètres du shader en un clic.
-*   **Feedback Visuel** : Moniteur d'entrées MIDI intégré pour le débogage.
+### 1) Développement (recommandé)
 
-### 🎬 Post-Processing & Export
-*   **Effets Cinématiques** : Bloom, RGB Shift (Aberration Chromatique), Glitch, Pixel Art, Vignette.
-*   **Export Vidéo** : Enregistrez des boucles parfaites en **WebM/MP4** (60 FPS) avec choix du bitrate et de la résolution (jusqu'à 4K).
-*   **Export Image** : Capture d'écran haute résolution (PNG).
-*   **Export Code** : Générez le code GLSL final pour l'utiliser dans vos propres projets.
-
-### 🛠 Interface Pro
-*   Interface flottante rétractable (Tweakpane v4).
-*   Moniteurs de performance (FPS, MS, Graphiques Audio).
-*   Sauvegarde automatique des réglages (LocalStorage).
-
-## 🚀 Installation & Utilisation
-
-Aucune installation complexe n'est requise (pas de `npm install`, pas de bundler). Le projet utilise des modules ES6 natifs.
-
-### Lancement Rapide
-1.  Clonez ce dépôt.
-2.  Servez le dossier racine avec un serveur web local (pour éviter les erreurs CORS).
-    *   **VS Code** : Installez l'extension "Live Server" et cliquez sur "Go Live".
-    *   **Python** : `python3 -m http.server`
-    *   **Node** : `npx serve`
-3.  Ouvrez votre navigateur sur `http://localhost:8000`.
-
-### Contrôles
-*   **Double-clic** sur le canvas : Plein écran.
-*   **Haut-droit (☰)** : Afficher/Masquer l'interface.
-*   **Glisser-déposer** : Chargez une image (texture) ou un fichier audio directement sur la fenêtre.
-
-## 📂 Structure du Projet
-
+```bash
+npm install
+npm run dev
 ```
+
+Ouvrir ensuite l'URL affichée par Vite (en général `http://localhost:5173`).
+
+### 2) Mode “serve” (production locale)
+
+Si tu veux utiliser `serve`, il faut servir le **build** (`dist`) et pas les sources:
+
+```bash
+npm run serve:dist
+```
+
+Ce script exécute `vite build` puis `npx serve dist -s -l 4173`.
+
+### 3) Alternative preview Vite
+
+```bash
+npm run build
+npm run preview
+```
+
+## 🧭 Pourquoi `npx serve` seul ne marche pas toujours
+
+`npx serve` à la racine sert les fichiers source bruts. Or une app Vite/React attend une transformation/module resolution que ce mode ne garantit pas (d'où erreurs de chargement module/MIME selon contexte). En migration React, il faut passer par `vite` (`dev`/`build`/`preview`).
+
+## 📂 Structure (migration)
+
+```txt
 /
-├── index.html          # Point d'entrée
-├── style.css           # Styles UI (Glassmorphism)
-├── src/
-│   ├── main.js         # Bootstrapper
-│   ├── App.js          # Orchestrateur principal (Three.js)
-│   ├── Config.js       # Définition des paramètres UI
-│   ├── shaders.js      # Bibliothèque de chunks GLSL
-│   ├── AudioEngine.js  # Analyse audio & Beat detection
-│   └── VideoRecorder.js # Moteur d'export vidéo
-│   └── MidiHandler.js  # Gestion Web MIDI API
-└── docs/               # Documentation
+├── index.html                       # Shell HTML Vite
+├── src/main.tsx                     # Entrée React actuelle
+├── src/App.tsx                      # Routing React
+├── src/features/shader-studio/*     # UI/logic React principale
+├── App.js, main.js, style.css       # Couche legacy conservée pour migration
+└── docs/                            # Documentation de migration
 ```
 
-## 🤝 Contribuer
+## 🤝 Contribution
 
-Les contributions sont les bienvenues ! Veuillez consulter CONTRIBUTING.md pour les détails.
+Les contributions sont bienvenues. En priorité: stabilisation React, réduction du legacy DOM, et validation runtime WebGL/WebGPU.
 
 ## 📜 Licence
 
-Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
-
----
-
-*Créé avec ❤️ et WebGL.*
+MIT.
