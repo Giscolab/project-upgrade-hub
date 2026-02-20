@@ -1,10 +1,10 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GPULoader from '@/components/shader/GPULoader';
-import ShaderControls from './components/ShaderControls';
-import AudioVideoControls from './components/AudioVideoControls';
+import AppLayout from '@/components/layout/AppLayout';
+import RightPanel from '@/components/layout/RightPanel';
 import GlslEditorPanel from './components/GlslEditorPanel';
-import LegacyMigrationSummary from './components/LegacyMigrationSummary';
 import MigrationChecklistPanel from './components/MigrationChecklistPanel';
+import CanvasOverlay from './components/CanvasOverlay';
 import { formatStatus } from './config/defaults';
 import { readPersistedStudioState, useStudioPersistence } from './hooks/useStudioPersistence';
 import { useAudioReactiveRuntime } from './hooks/useAudioReactiveRuntime';
@@ -74,6 +74,8 @@ export default function ShaderStudioPage() {
   const [exportProgress, setExportProgress] = useState(0);
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportInProgress, setExportInProgress] = useState(false);
+  const [migrationPanelOpen, setMigrationPanelOpen] = useState(false);
+  const [fps, setFps] = useState(0);
 
   const updateState = useCallback((updater: StudioState | ((prev: StudioState) => StudioState), pushHistory = true) => {
     setState((prev) => {
@@ -306,116 +308,139 @@ export default function ShaderStudioPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let frameCount = 0;
+    let last = performance.now();
+    let rafId = 0;
+
+    const measure = (now: number) => {
+      frameCount += 1;
+      if (now - last >= 1000) {
+        setFps((frameCount * 1000) / (now - last));
+        frameCount = 0;
+        last = now;
+      }
+      rafId = requestAnimationFrame(measure);
+    };
+
+    rafId = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  const resolution = canvasEl ? `${canvasEl.width} x ${canvasEl.height}` : '—';
+  const compileOk = engineReady && firstFrameRendered && shaderCompiled && !shaderError && !runtimeError;
+
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-background">
-      {loading && <GPULoader onLoaded={() => undefined} />}
-      <Suspense fallback={null}>
-        <BabylonCanvas
-        key={compileKey}
-        params={mappedParams}
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        shaderToyChannels={state.shaderToy.channels}
-        onCanvasReady={setCanvasEl}
-        onEngineReady={handleEngineReady}
-        onFirstFrame={handleFirstFrame}
-        onShaderCompiled={handleShaderCompiled}
-        onShaderError={setShaderError}
-        onRuntimeError={handleRuntimeError}
+    <AppLayout
+      shaderName={params.noise}
+      compileOk={compileOk}
+      statusText={formatStatus(params)}
+      onToggleMigration={() => setMigrationPanelOpen((prev) => !prev)}
+      leftPanel={(
+        <GlslEditorPanel
+          vertexShader={vertexShader}
+          fragmentShader={fragmentShader}
+          onVertexChange={setVertexShader}
+          onFragmentChange={setFragmentShader}
+          onCompile={handleCompile}
+          onExportCode={handleExportCode}
         />
-      </Suspense>
-
-      <header className="glass-panel absolute left-4 right-4 top-4 z-30 flex h-12 items-center justify-between rounded-xl px-4">
-        <div className="flex items-center gap-3">
-          <div className="h-6 w-6 rounded-md bg-gradient-to-br from-primary to-accent" />
-          <span className="text-sm font-semibold tracking-widest text-foreground">SHADER STUDIO / REACT</span>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          {engineReady && firstFrameRendered && shaderCompiled ? 'Runtime prêt' : 'Unification React en cours'}
-        </div>
-      </header>
-
-      {shaderError && (
-        <section className="glass-panel absolute left-[460px] top-20 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
-          <p className="mb-1 font-semibold">Shader compile/runtime error</p>
-          <pre className="max-h-28 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{shaderError}</pre>
-        </section>
       )}
+      canvas={(
+        <div className="relative h-full w-full">
+          {loading && <GPULoader onLoaded={() => undefined} />}
+          <Suspense fallback={null}>
+            <BabylonCanvas
+              key={compileKey}
+              params={mappedParams}
+              vertexShader={vertexShader}
+              fragmentShader={fragmentShader}
+              shaderToyChannels={state.shaderToy.channels}
+              onCanvasReady={setCanvasEl}
+              onEngineReady={handleEngineReady}
+              onFirstFrame={handleFirstFrame}
+              onShaderCompiled={handleShaderCompiled}
+              onShaderError={setShaderError}
+              onRuntimeError={handleRuntimeError}
+            />
+          </Suspense>
 
-      {runtimeError && (
-        <section className="glass-panel absolute left-[460px] top-56 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
-          <p className="mb-1 font-semibold">Engine readiness failed</p>
-          <pre className="max-h-28 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{runtimeError}</pre>
-        </section>
+          {shaderError && (
+            <section className="absolute left-3 top-3 z-30 max-w-xl rounded border border-[#ef4444]/40 bg-[#111118]/90 p-2 text-xs text-[#ef4444]">
+              <p className="mb-1 font-semibold">Shader compile/runtime error</p>
+              <pre className="max-h-24 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{shaderError}</pre>
+            </section>
+          )}
+
+          {runtimeError && (
+            <section className="absolute left-3 top-32 z-30 max-w-xl rounded border border-[#ef4444]/40 bg-[#111118]/90 p-2 text-xs text-[#ef4444]">
+              <p className="mb-1 font-semibold">Engine readiness failed</p>
+              <pre className="max-h-24 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{runtimeError}</pre>
+            </section>
+          )}
+
+          <CanvasOverlay
+            fps={fps}
+            resolution={resolution}
+            onFullscreen={() => canvasEl?.requestFullscreen?.()}
+          />
+          <MigrationChecklistPanel open={migrationPanelOpen} onClose={() => setMigrationPanelOpen(false)} />
+        </div>
       )}
-
-      <GlslEditorPanel
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        onVertexChange={setVertexShader}
-        onFragmentChange={setFragmentShader}
-        onCompile={handleCompile}
-        onExportCode={handleExportCode}
-      />
-
-      <ShaderControls params={params} onParamsChange={setParams} />
-      <AudioVideoControls
-        audio={state.audio}
-        video={state.video}
-        midiStatus={midiStatus}
-        webgpuStatus={webgpuStatus}
-        exportProgress={exportProgress}
-        exportStatus={exportStatus}
-        exportInProgress={exportInProgress}
-        beatPulse={beatPulse}
-        audioPaused={paused}
-        activeAudioSource={sourceLabel}
-        shaderToyChannels={state.shaderToy.channels}
-        presetNames={Object.keys(presetLibrary)}
-        selectedPresetName={selectedPresetName}
-        canUndo={history.length > 0}
-        canRedo={future.length > 0}
-        onAudioChange={(audio) => updateState((prev) => ({ ...prev, audio }))}
-        onVideoChange={(video) => updateState((prev) => ({ ...prev, video }))}
-        onStartMicrophone={() => {
-          updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'mic', fileName: null } }));
-          startMicrophone();
-        }}
-        onSelectAudioFile={(file) => {
-          updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'file', fileName: file.name } }));
-          startFile(file);
-        }}
-        onPauseAudio={pause}
-        onResumeAudio={resume}
-        onStopAudio={() => {
-          updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: false } }));
-          stop();
-        }}
-        onUpdateShaderToyChannel={(index, value) => updateState((prev) => {
-          const channels = [...prev.shaderToy.channels];
-          channels[index] = value;
-          return { ...prev, shaderToy: { ...prev.shaderToy, enabled: channels.some(Boolean), channels } };
-        })}
-        onExportVideo={handleExportVideo}
-        onCancelExportVideo={handleCancelExportVideo}
-        onExportPng={handleExportPng}
-        onExportShadertoy={handleExportShadertoy}
-        onRunWebGPU={handleRunWebGPU}
-        onToggleMidi={() => updateState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}
-        onPresetNameChange={setSelectedPresetName}
-        onSavePreset={handleSavePreset}
-        onLoadPreset={handleLoadPreset}
-        onDeletePreset={handleDeletePreset}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-      />
-      <LegacyMigrationSummary />
-      <MigrationChecklistPanel />
-
-      <div className="glass-panel absolute bottom-4 left-4 right-4 z-30 flex h-8 items-center justify-between rounded-lg px-4 text-xs text-muted-foreground">
-        <span>{formatStatus(params)}</span>
-        <span>Double-click canvas fullscreen · Ctrl/Cmd+Z undo · Ctrl/Cmd+Y redo</span>
-      </div>
-    </div>
+      rightPanel={(
+        <RightPanel
+          params={params}
+          onParamsChange={setParams}
+          audio={state.audio}
+          video={state.video}
+          midiStatus={midiStatus}
+          webgpuStatus={webgpuStatus}
+          exportProgress={exportProgress}
+          exportStatus={exportStatus}
+          exportInProgress={exportInProgress}
+          beatPulse={beatPulse}
+          audioPaused={paused}
+          activeAudioSource={sourceLabel}
+          shaderToyChannels={state.shaderToy.channels}
+          presetNames={Object.keys(presetLibrary)}
+          selectedPresetName={selectedPresetName}
+          canUndo={history.length > 0}
+          canRedo={future.length > 0}
+          onAudioChange={(audio) => updateState((prev) => ({ ...prev, audio }))}
+          onVideoChange={(video) => updateState((prev) => ({ ...prev, video }))}
+          onStartMicrophone={() => {
+            updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'mic', fileName: null } }));
+            startMicrophone();
+          }}
+          onSelectAudioFile={(file) => {
+            updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'file', fileName: file.name } }));
+            startFile(file);
+          }}
+          onPauseAudio={pause}
+          onResumeAudio={resume}
+          onStopAudio={() => {
+            updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: false } }));
+            stop();
+          }}
+          onUpdateShaderToyChannel={(index, value) => updateState((prev) => {
+            const channels = [...prev.shaderToy.channels];
+            channels[index] = value;
+            return { ...prev, shaderToy: { ...prev.shaderToy, enabled: channels.some(Boolean), channels } };
+          })}
+          onExportVideo={handleExportVideo}
+          onCancelExportVideo={handleCancelExportVideo}
+          onExportPng={handleExportPng}
+          onExportShadertoy={handleExportShadertoy}
+          onRunWebGPU={handleRunWebGPU}
+          onToggleMidi={() => updateState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}
+          onPresetNameChange={setSelectedPresetName}
+          onSavePreset={handleSavePreset}
+          onLoadPreset={handleLoadPreset}
+          onDeletePreset={handleDeletePreset}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+        />
+      )}
+    />
   );
 }
