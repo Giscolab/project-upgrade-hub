@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { MIGRATION_PLAN, getMigrationProgress } from "../config/migrationPlan";
+import { MIGRATION_PLAN, MIGRATION_PLAN_LAST_VERIFIED, getMigrationProgress } from "../config/migrationPlan";
 
 const STATUS_LABEL: Record<string, string> = {
   done: "Done",
@@ -36,7 +36,7 @@ export default function MigrationChecklistPanel() {
       <div className="mb-3 flex items-center justify-between">
         <p className="text-foreground">Migration checklist (legacy → React)</p>
         <Badge variant="outline" className="text-xs">
-          {progress.completionPercent}% approx.
+          {progress.completionPercent}% approx. · vérifié {MIGRATION_PLAN_LAST_VERIFIED}
         </Badge>
       </div>
 

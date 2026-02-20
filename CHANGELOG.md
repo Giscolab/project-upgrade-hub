@@ -2,6 +2,17 @@
 
 Toutes les modifications notables de ce projet seront documentées dans ce fichier.
 
+## [non publié] — 2026-02-20
+
+### Ajouté
+- Documentation des gates de migration 1→7 pour `main.js` et `ShadertoyExporter.js` dans `docs/migration-evidence/`.
+
+### Modifié
+- Synchronisation de `src/features/shader-studio/config/migrationPlan.ts` avec l’état réel du code React (cibles, restants, date de vérification).
+- Alignement de `docs/REACT_MIGRATION_ROADMAP.md` et `roadmap.md` sur l’implémentation réelle (`src/`).
+- Mise à jour de `ANALYSE_ULTRA_FINE.md` (état actuel React/Vite, workflow contribution, métriques).
+- Clarification du workflow contributeur dans `CONTRIBUTING.md` (7 gates, source de vérité migration, commandes Vite).
+
 ## [5.0.0] - 2023-10-27
 
 ### Ajouté

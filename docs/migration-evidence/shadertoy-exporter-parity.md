@@ -1,5 +1,17 @@
 # Preuve de parité — `ShadertoyExporter.js`
 
+## Fichier legacy concerné pour suppression future
+- `ShadertoyExporter.js` (racine du dépôt), à supprimer uniquement après validation complète Gate 1→7.
+
+## Gates 1→7
+- [x] Gate 1 — Inventaire figé (API bridge export ShaderToy).
+- [x] Gate 2 — Mapping legacy → React/TS documenté.
+- [x] Gate 3 — Preuve de parité documentée (ce fichier + tests).
+- [x] Gate 4 — `migrationPlan.ts` synchronisé avec ce statut.
+- [x] Gate 5 — Roadmaps synchronisées (`docs/REACT_MIGRATION_ROADMAP.md`, `roadmap.md`).
+- [ ] Gate 6 — PR non encore fusionnée.
+- [ ] Gate 7 — Suppression du fichier legacy non exécutée.
+
 ## API legacy attendue
 
 `ShadertoyExporter.js` legacy doit fournir:

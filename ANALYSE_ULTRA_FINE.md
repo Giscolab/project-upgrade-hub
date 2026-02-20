@@ -2,9 +2,9 @@
 
 ## 1) Positionnement produit et proposition de valeur
 
-Shader Studio v5 est un studio créatif Web orienté "no-code" pour produire des visuels GLSL interactifs en temps réel, avec un focus VJ/performance live (audio-réactivité, MIDI, presets, export vidéo). Le README annonce un runtime 100% navigateur sans build step, et un usage basé sur modules ES natifs + serveur statique local.  
+Shader Studio v5 est un studio créatif Web orienté "no-code" pour produire des visuels GLSL interactifs en temps réel, avec un focus VJ/performance live (audio-réactivité, MIDI, presets, export vidéo/PNG). Le runtime actif est désormais la stack React + TypeScript + Vite, avec Babylon.js comme moteur de rendu.  
 
-Implication produit : excellent time-to-first-render (ouvrir `index.html` via serveur local) et faible friction pour les artistes, au prix d'une dépendance CDN à l'exécution.
+Implication produit : meilleur cadre de maintenance (typage/tests/build) tout en gardant un usage 100% navigateur côté exécution.
 
 ## 2) Architecture logicielle (vue macro)
 
@@ -94,9 +94,9 @@ Aucune infrastructure de tests unitaires/intégration n'est présente. Le projet
 
 ## 8) Expérience développeur et contribution
 
-- Projet facile à lancer (`python3 -m http.server`) sans dépendances Node.
-- Contribuer est simple pour itérations rapides.
-- En revanche, `App.js` réduit l'onboarding avancé : lecture longue avant modifications sûres.
+- Workflow principal aligné sur Node/Vite (`npm run dev`, `npm run build`, `npm run test`).
+- La migration React améliore l'onboarding via découpage en composants/hooks/services TypeScript.
+- Les bridges legacy existent encore, mais la logique active est concentrée dans `src/features/shader-studio`.
 
 ## 9) Priorisation pragmatique (30 jours)
 
@@ -114,9 +114,18 @@ Projet **très riche fonctionnellement** et bien orienté pour la création visu
 
 ## Annexe — métriques rapides
 
-- `src/App.js` : 1785 lignes.
-- `src/shaders.js` : 1075 lignes.
-- Total fichiers JS `src/` : 3608 lignes.
-- Total lignes (fichiers principaux inspectés) : 3845.
+Mesure statique réalisée sur les fichiers actifs legacy + React clés:
 
-Ces métriques confirment une concentration de logique dans quelques fichiers volumineux.
+- `App.js` : 35 lignes (bridge legacy React).
+- `main.js` : 12 lignes (entrypoint bridge).
+- `src/features/shader-studio/ShaderStudioPage.tsx` : 418 lignes.
+- `src/components/shader/BabylonCanvas.tsx` : 396 lignes.
+- `src/features/shader-studio/hooks/useAudioReactiveRuntime.ts` : 174 lignes.
+- `src/features/shader-studio/services/videoExportService.ts` : 137 lignes.
+
+Ces métriques confirment le basculement de la complexité opérationnelle vers la base React/TypeScript, avec des bridges legacy désormais minces.
+
+
+## Historique des mises à jour
+
+- 2026-02-20 — Alignement de l'analyse avec l'état réel React/Vite/Babylon, correction du workflow de contribution et actualisation des métriques.

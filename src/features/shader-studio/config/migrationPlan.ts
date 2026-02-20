@@ -11,6 +11,8 @@ export interface MigrationItem {
   validationChecks: string[];
 }
 
+export const MIGRATION_PLAN_LAST_VERIFIED = "2026-02-20";
+
 export const MIGRATION_PLAN: MigrationItem[] = [
   {
     id: "render-core",
@@ -28,6 +30,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     remainingWork: [
       "Reconcile legacy geometry names not yet mapped (custom shapes)",
       "Finalize parity tuning for post-process intensity/order against legacy output",
+      "Validate visual preset parity against the legacy render output",
     ],
     validationChecks: [
       "Geometry switch updates mesh without leaks",
@@ -50,11 +53,11 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Migration coverage panels are now rendered in the main Shader Studio page',
       'ShaderControls toggle rendering loop has been stabilized and typechecked',
       'Shader compile/runtime error overlay is now wired in ShaderStudioPage',
+      'GLSL editor panel (edit/compile/export) is wired in ShaderStudioPage',
       'Preuve de parité entrypoint legacy main.js documentée: docs/migration-evidence/main-js-parity.md',
     ],
     remainingWork: [
       "Add texture layers and blend mode controls",
-      "Add shader code editor and validation actions",
       "Finalize expert controls parity (material, texture, shader editor)",
     ],
     validationChecks: [
@@ -87,12 +90,13 @@ export const MIGRATION_PLAN: MigrationItem[] = [
   {
     id: "midi",
     legacyFile: "MidiHandler.js",
-    reactTarget: "src/features/shader-studio/hooks/useMidiMapping.ts",
+    reactTarget: "src/features/shader-studio/hooks/useMidiRuntime.ts",
     status: "in_progress",
     scope: "MIDI learn, mapping persistence, input monitor",
     completedWork: [
       "Web MIDI lifecycle hook wired in main React page",
       "CC events can update mapped shader parameters at runtime",
+      "MIDI status feedback is displayed in the React panel",
     ],
     remainingWork: [
       "Add MIDI learn flow on selected React control",
@@ -119,9 +123,8 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'PNG export action is wired in the React panel with toBlob and toDataURL fallback support',
     ],
     remainingWork: [
-      "Propagate export progress/cancel telemetry to legacy bridge compatibility layer",
       "Validate codec fallback matrix across supported browsers",
-      "Finalize PNG image export parity against legacy workflow",
+      "Validate PNG image export parity against legacy workflow",
     ],
     validationChecks: [
       "Export duration matches configured value",

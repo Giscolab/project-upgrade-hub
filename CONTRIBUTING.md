@@ -1,38 +1,44 @@
 # Contribuer à Shader Studio
 
-Merci de l'intérêt que vous portez à Shader Studio ! Nous voulons rendre la création de shaders accessible à tous, et votre aide est précieuse.
+Merci de votre intérêt pour Shader Studio.
 
-## Comment contribuer ?
+## Démarrage rapide (workflow actuel)
 
-### 🐛 Signaler un Bug
-Si vous trouvez un bug, ouvrez une **Issue** sur GitHub en décrivant :
-1.  Ce que vous essayiez de faire.
-2.  Ce qui s'est passé (avec des captures d'écran si possible).
-3.  Votre navigateur et système d'exploitation.
+```bash
+npm install
+npm run dev
+npm run build
+npm run test
+```
 
-### 💡 Proposer une Fonctionnalité
-Vous avez une idée de nouveau shader, de géométrie ou d'effet ?
-1.  Ouvrez une **Issue** avec le tag `enhancement`.
-2.  Décrivez votre idée et pourquoi elle serait utile.
+Le workflow principal est React + TypeScript + Vite.
 
-### 💻 Soumettre du Code (Pull Request)
-1.  **Forkez** le dépôt.
-2.  Créez une branche pour votre fonctionnalité (`git checkout -b feature/AmazingShader`).
-3.  Commitez vos changements (`git commit -m 'Add AmazingShader'`).
-4.  Poussez vers la branche (`git push origin feature/AmazingShader`).
-5.  Ouvrez une **Pull Request**.
+## Règles de migration legacy → React
 
-## Standards de Code
+La source de vérité technique pour l’avancement est:
+- `src/features/shader-studio/config/migrationPlan.ts`
 
-*   **Pas de Build Step** : Le projet doit rester exécutable directement dans le navigateur sans compilation (ES Modules natifs).
-*   **Style** : Gardez le code propre et commenté. Utilisez la syntaxe ES6+ moderne.
-*   **Performance** : Attention aux boucles de rendu (`animate`). Évitez d'allouer de la mémoire (new Vector3, new Object) à chaque frame.
+La source documentaire de référence est:
+- `docs/REACT_MIGRATION_ROADMAP.md`
+- `roadmap.md` (version synthétique)
 
-## Ajouter un nouveau Shader
+## Procédure des 7 gates (obligatoire avant suppression d’un fichier legacy)
 
-Pour ajouter un nouveau type de bruit ou de motif :
-1.  Ajoutez le code GLSL dans `src/shaders.js` (objet `ShaderChunks`).
-2.  Ajoutez l'option dans `src/Config.js` (paramètre `noiseType`).
-3.  Testez le résultat visuel.
+1. Inventaire figé du fichier legacy.
+2. Mapping legacy → React documenté.
+3. Preuve de parité fournie (tests/capture/scénario) dans `docs/migration-evidence/`.
+4. `migrationPlan.ts` mis à jour.
+5. Roadmaps (`docs/REACT_MIGRATION_ROADMAP.md`, `roadmap.md`) mises à jour.
+6. PR fusionnée.
+7. Suppression du fichier legacy dans une PR dédiée.
 
-Merci de faire grandir Shader Studio ! 🚀
+## Pull Requests
+
+- Ouvrir des PR petites et ciblées.
+- Ne pas cocher un item de migration sans preuve dans le code.
+- Ajouter les commandes de vérification exécutées dans la description de PR.
+
+## Signaler un bug / proposer une fonctionnalité
+
+- Ouvrir une issue avec contexte, reproduction, et environnement navigateur.
+- Pour les nouvelles fonctionnalités, préciser le domaine (`render`, `audio`, `midi`, `export`, `persistence`).

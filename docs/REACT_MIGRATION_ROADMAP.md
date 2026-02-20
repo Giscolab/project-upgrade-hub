@@ -15,47 +15,51 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [x] Entrée React/Vite active (`src/main.tsx`, `src/App.tsx`, `src/pages/Index.tsx`).
 - [x] Runtime scène React actif (`ShaderStudioPage` + `BabylonCanvas`).
 - [x] Loader/erreurs runtime connectés au flux principal.
-- [x] Audio runtime branché (FFT bands utilisées côté React).
-- [x] MIDI runtime branché (événements CC connectés au flux React).
+- [x] Audio runtime branché (micro + FFT + source fichier + pause/reprise + beat detect).
+- [x] MIDI runtime branché (lifecycle + événements CC + statut UI).
 - [x] Export vidéo React branché (progression + annulation).
-- [x] Export ShaderToy + diagnostic WebGPU disponibles.
+- [x] Export PNG canvas branché (toBlob + fallback toDataURL).
+- [x] Export ShaderToy branché.
 - [x] Persistance versionnée branchée sur l’état studio.
-- [ ] Parité fine complète UI/FX legacy ↔ React (reste à finaliser).
+- [x] Undo/redo + presets nommés branchés.
+- [x] Chaîne post-process React branchée (pixel/glitch/vignette/bloom/rgb-shift).
+- [ ] MIDI learn + persistance de mapping non implémentés.
+- [ ] Contrôles texture/blend non implémentés.
+- [ ] Presets visuels validés en parité legacy non documentés.
+- [ ] WebGPU fallback multi-device non validé/documenté.
 - [ ] Suppression contrôlée des modules legacy après preuve de couverture 100%.
 
 ## 2.1) Focus actuel (mode `priorities_only`)
 
 ### Parité visuelle/graphique
 - [ ] Finaliser la parité post-process (ordre + intensité vs legacy).
-- [x] Terminer les channels ShaderToy avancés (textures multiples).
 - [ ] Valider les presets visuels pour garantir le même rendu.
 
 ### UI contrôles
 - [ ] Compléter les contrôles texture/blend.
-- [x] Ajouter les raccourcis/actions de migration avec liens directs par item.
 
 ### Audio/MIDI
-- [x] Ajouter source audio fichier + pause/reprise.
-- [x] Implémenter beat detect + calibration UI.
 - [ ] Finir MIDI learn + persistance de la table de mapping.
 
 ### Export/Persistance
-- [x] Finaliser l’export image PNG (parité legacy).
-- [x] Ajouter undo/redo.
-- [x] Ajouter presets nommés (avec versioning).
+- [ ] Valider la matrice de compatibilité codec export vidéo selon navigateurs cibles.
+- [ ] Valider la parité PNG face au workflow legacy sur scénarios de référence.
 
 ## 3) Plan par domaines (cases à cocher)
 
 ### A. Runtime graphique
 - [x] Scene/camera/mesh/uniforms principaux migrés.
 - [x] Overlay erreurs shader/runtime visible dans l’UI.
+- [x] Chaîne post-process branchée dans le runtime React.
 - [ ] Parité stricte post-process (ordre/intensité) vs legacy.
 - [x] Channels ShaderToy avancés (textures multiples) finalisés.
 - [ ] Presets visuels complets + validation parité rendu.
+- [ ] WebGPU fallback multi-device validé/documenté.
 
 ### B. Contrôles UI
 - [x] Contrôles principaux geometry/noise/sliders/toggles migrés.
 - [x] Contrôles material avancés (metalness/fresnel/rim) complets.
+- [x] Éditeur GLSL React (édition/compile/export) branché.
 - [ ] Contrôles texture/blend complets.
 - [x] Raccourcis actions migration (liens directs par item) complets.
 
@@ -69,7 +73,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 ### D. Export/Persistance
 - [x] Export vidéo + progression + annulation.
 - [x] Export ShaderToy branché.
-- [x] Export image PNG (parité legacy) finalisé.
+- [x] Export image PNG branché.
 - [x] Persistance versionnée état studio.
 - [x] Undo/redo + presets nommés.
 
@@ -130,7 +134,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [x] Gate 3/7 — Preuve de parité: `docs/migration-evidence/shadertoy-exporter-parity.md`
 - [x] Gate 4/7 — `migrationPlan.ts` référencé avec preuve explicite
 - [x] Gate 5/7 — Roadmap/évidence mises à jour
-- [ ] Gate 6/7 — PR non encore fusionnée sur `main` (en cours dans cette PR)
+- [ ] Gate 6/7 — PR non encore fusionnée sur `main`
 - [ ] Gate 7/7 (suppression)
 
 #### `WebGPUCompute.js`
@@ -166,7 +170,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [x] Gate 3/7 — Preuve de parité: `docs/migration-evidence/main-js-parity.md`
 - [x] Gate 4/7 — `migrationPlan.ts` référencé avec preuve explicite
 - [x] Gate 5/7 — Roadmap/évidence mises à jour
-- [ ] Gate 6/7 — PR non encore fusionnée sur `main` (en cours dans cette PR)
+- [ ] Gate 6/7 — PR non encore fusionnée sur `main`
 - [ ] Gate 7/7 (suppression)
 
 > Conformément à la gouvernance (section 5), la suppression des fichiers legacy (`Gate 7`) sera faite via une PR dédiée après validation et fusion des Gates 1–6.
@@ -175,8 +179,13 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 
 Chaque PR de migration doit:
 1. Mettre à jour `src/features/shader-studio/config/migrationPlan.ts`.
-2. Mettre à jour `docs/REACT_MIGRATION_ROADMAP.md` et `roadmap.md`.
-3. Fournir checks/tests exécutés.
-4. Décrire clairement ce qui reste.
+2. Mettre à jour `docs/REACT_MIGRATION_ROADMAP.md` + `roadmap.md`.
+3. Fournir la preuve de parité (tests/scénario/capture) dans `docs/migration-evidence/`.
+4. Ne jamais supprimer le legacy dans la même PR que les gates 1→6.
 
-Interdiction de cocher “fait” si ce n’est pas branché au flux principal de production.
+## 6) Source technique de vérité
+
+- `src/features/shader-studio/config/migrationPlan.ts`
+- `src/features/shader-studio/components/MigrationChecklistPanel.tsx`
+
+Date de vérification du plan technique: `2026-02-20`.

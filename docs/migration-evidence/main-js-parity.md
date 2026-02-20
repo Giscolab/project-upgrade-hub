@@ -1,5 +1,17 @@
 # Preuve de parité — `main.js`
 
+## Fichier legacy concerné pour suppression future
+- `main.js` (racine du dépôt), à supprimer uniquement après validation complète Gate 1→7.
+
+## Gates 1→7
+- [x] Gate 1 — Inventaire figé (API entrypoint + HMR dispose).
+- [x] Gate 2 — Mapping legacy → React/TS documenté.
+- [x] Gate 3 — Preuve de parité documentée (ce fichier).
+- [x] Gate 4 — `migrationPlan.ts` synchronisé avec ce statut.
+- [x] Gate 5 — Roadmaps synchronisées (`docs/REACT_MIGRATION_ROADMAP.md`, `roadmap.md`).
+- [ ] Gate 6 — PR non encore fusionnée.
+- [ ] Gate 7 — Suppression du fichier legacy non exécutée.
+
 ## API legacy attendue
 
 `main.js` legacy doit:
