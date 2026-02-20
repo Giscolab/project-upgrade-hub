@@ -13,6 +13,14 @@ const STATUS_CLASS: Record<string, string> = {
   pending: 'bg-muted text-muted-foreground border-border',
 };
 
+const ITEM_SHORTCUTS: Partial<Record<string, { label: string; href: string }>> = {
+  'ui-controls': { label: 'Aller aux contrôles shader', href: '#speed' },
+  'audio-engine': { label: 'Aller section audio', href: '#audio-controls' },
+  midi: { label: 'Aller switch MIDI', href: '#midi-toggle' },
+  'shadertoy-webgpu': { label: 'Aller channels ShaderToy', href: '#shadertoy-channels' },
+  'preset-storage': { label: 'Aller presets/undo-redo', href: '#preset-controls' },
+};
+
 export default function MigrationChecklistPanel() {
   const progress = getMigrationProgress();
 
@@ -37,6 +45,11 @@ export default function MigrationChecklistPanel() {
             <p>Legacy: {item.legacyFile}</p>
             <p>React target: {item.reactTarget}</p>
             <p className="mt-1">Remaining: {item.remainingWork[0]}</p>
+            {ITEM_SHORTCUTS[item.id] && (
+              <a className="mt-1 inline-block text-primary underline" href={ITEM_SHORTCUTS[item.id]?.href}>
+                {ITEM_SHORTCUTS[item.id]?.label}
+              </a>
+            )}
           </article>
         ))}
       </div>
