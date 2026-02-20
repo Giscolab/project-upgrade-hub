@@ -115,12 +115,12 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Video settings state scaffold created in React',
       'MediaRecorder runtime service wired for canvas capture',
       'Export action connected in Audio/Export panel',
+      'MediaRecorder export now reports progress and supports cancellation via AbortController',
+      'React panel now exposes duration/codec/resolution controls for video export',
     ],
     remainingWork: [
-      'Integrate MediaRecorder capture workflow',
-      'Finalize cancel/progress state in React panel and propagate to legacy bridge',
-      'Expose duration/codec/quality controls in React panel',
-      'Add progress and cancel states',
+      'Propagate export progress/cancel telemetry to legacy bridge compatibility layer',
+      'Validate codec fallback matrix across supported browsers',
     ],
     validationChecks: [
       'Export duration matches configured value',

@@ -153,7 +153,7 @@ La migration est considérée terminée uniquement si :
 
 ## Phase E — Export & recording
 - [x] Implémenter service export vidéo (MediaRecorder).
-- [ ] Ajouter progression + cancel + états erreur.
+- [x] Ajouter progression + cancel + états erreur.
 - [ ] Ajouter export image PNG + export code shader (ShaderToy code exporté, PNG restant).
 - [ ] Vérifier compatibilité navigateurs supportés.
 
@@ -204,3 +204,5 @@ La migration est considérée terminée uniquement si :
 
 ## Mise à jour récente
 - Les fichiers legacy racine (`App.js`, `main.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `ShadertoyExporter.js`, `WebGPUCompute.js`, `Config.js`, `shaders.js`) ont été réécrits en ponts de compatibilité qui délèguent désormais au runtime React/TypeScript.
+- Le flux d'export vidéo React (`videoExportService` + `AudioVideoControls` + `ShaderStudioPage`) expose maintenant la progression temps-réel, l'annulation utilisateur et les états de succès/erreur sans quitter le flux principal.
+- Le panneau React expose aussi les réglages durée/résolution/codec pour rapprocher la parité avec les options legacy.
