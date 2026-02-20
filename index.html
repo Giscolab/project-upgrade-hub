@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLSL &amp; Shadertoy Studio</title>
+        <script type="importmap">
+        {
+            "imports": {
+                "tweakpane": "https://cdn.jsdelivr.net/npm/tweakpane@4.0.5/dist/tweakpane.min.js",
+                "@tweakpane/plugin-essentials": "https://cdn.jsdelivr.net/npm/@tweakpane/plugin-essentials@0.2.1/dist/tweakpane-plugin-essentials.min.js"
+            }
+        }
+    </script>
+    <!-- Babylon.js Core & Loaders -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+
+    <!-- CodeMirror (Editor) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+
+  
+  
+  <meta name="description" content="Un éditeur de shaders procéduraux &quot;No-Code&quot; haute performance, fonctionnant entièrement dans le navigateur avec WebGL">
+  
+  
+  <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/e141a707-258c-4868-a130-aa13cff97d9c?Expires=1771537322&amp;GoogleAccessId=go-api-on-aws%40gpt-engineer-390607.iam.gserviceaccount.com&amp;Signature=ltpxfOMF3iiXWDWBpEWdd12spzhbI%2FXk%2Bt63kLBbpu5Qnl7TGDwMgnHwiviSra8z26AP2dCjFo7A0G7JwaC4utGcN9eE86%2BVSlfgruE2eKvUcSETvOlXYmHbVIrqxLybVkjv%2FxmxpmO0%2FchAJDj4ZGS%2ByW4CKOFkB8xudeFciveKn0kLhgVfrbneQNldN0oxLwonQH9crcNQf28H8vSGRl4gDxWUxTP%2Fig4c82l%2FKkzbprRKG0P92u36qT3xivn1yzTUDoFD8ozl6uGTxBalcnzf%2BqyvnceMfue8X%2BBLrsR4J1AsMyl5vlyNIreYXu1lBxH%2BXPxWFcf2IxDqgZoj9g%3D%3D">
+  <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/e141a707-258c-4868-a130-aa13cff97d9c?Expires=1771537322&amp;GoogleAccessId=go-api-on-aws%40gpt-engineer-390607.iam.gserviceaccount.com&amp;Signature=ltpxfOMF3iiXWDWBpEWdd12spzhbI%2FXk%2Bt63kLBbpu5Qnl7TGDwMgnHwiviSra8z26AP2dCjFo7A0G7JwaC4utGcN9eE86%2BVSlfgruE2eKvUcSETvOlXYmHbVIrqxLybVkjv%2FxmxpmO0%2FchAJDj4ZGS%2ByW4CKOFkB8xudeFciveKn0kLhgVfrbneQNldN0oxLwonQH9crcNQf28H8vSGRl4gDxWUxTP%2Fig4c82l%2FKkzbprRKG0P92u36qT3xivn1yzTUDoFD8ozl6uGTxBalcnzf%2BqyvnceMfue8X%2BBLrsR4J1AsMyl5vlyNIreYXu1lBxH%2BXPxWFcf2IxDqgZoj9g%3D%3D">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:type" content="website">
+  
+  
+  
+  
+  <meta property="og:title" content="GLSL &amp; Shadertoy Studio">
+  <meta name="twitter:title" content="GLSL &amp; Shadertoy Studio">
+  <meta property="og:description" content="Un éditeur de shaders procéduraux &quot;No-Code&quot; haute performance, fonctionnant entièrement dans le navigateur avec WebGL">
+  <meta name="twitter:description" content="Un éditeur de shaders procéduraux &quot;No-Code&quot; haute performance, fonctionnant entièrement dans le navigateur avec WebGL">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
