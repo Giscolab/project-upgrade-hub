@@ -146,6 +146,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Preuve de parité Shadertoy bridge documentée: docs/migration-evidence/shadertoy-exporter-parity.md',
     ],
     remainingWork: [
+      "Finaliser l’intégration WebGPU avancée et les channels ShaderToy multi-textures dans le rendu principal",
       "Ajouter un affichage de trajectoires simulées WebGPU dans le rendu principal",
     ],
     validationChecks: [

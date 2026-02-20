@@ -52,7 +52,8 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 - [x] Overlay erreurs shader/runtime visible dans l’UI.
 - [x] Chaîne post-process branchée dans le runtime React.
 - [ ] Parité stricte post-process (ordre/intensité) vs legacy.
-- [x] Channels ShaderToy avancés (textures multiples) finalisés.
+- [x] Export ShaderToy de base finalisé (génération `.frag` et branchement UI React).
+- [ ] Intégration WebGPU avancée + channels ShaderToy multi-textures (en cours).
 - [ ] Presets visuels complets + validation parité rendu.
 - [ ] WebGPU fallback multi-device validé/documenté.
 

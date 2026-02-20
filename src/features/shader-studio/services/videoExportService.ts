@@ -47,6 +47,8 @@ export async function recordCanvasVideo(
   settings: VideoExportSettings,
   options: RecordCanvasVideoOptions = {},
 ) {
+  const originalWidth = canvas.width;
+  const originalHeight = canvas.height;
   const { width, height } = parseResolution(settings.resolution);
   canvas.width = width;
   canvas.height = height;
@@ -124,7 +126,12 @@ export async function recordCanvasVideo(
     }
   }, durationMs);
 
-  return result;
+  try {
+    return await result;
+  } finally {
+    canvas.width = originalWidth;
+    canvas.height = originalHeight;
+  }
 }
 
 export function downloadBlob(blob: Blob, filename: string) {
