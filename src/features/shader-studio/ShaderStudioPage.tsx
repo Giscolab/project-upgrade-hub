@@ -21,6 +21,10 @@ import { StudioState } from './types';
 export default function ShaderStudioPage() {
   const initialState = useMemo(() => readPersistedStudioState(), []);
   const [loading, setLoading] = useState(true);
+  const [engineReady, setEngineReady] = useState(false);
+  const [firstFrameRendered, setFirstFrameRendered] = useState(false);
+  const [shaderCompiled, setShaderCompiled] = useState(false);
+  const [runtimeError, setRuntimeError] = useState<string | null>(null);
   const [state, setState] = useState<StudioState>(initialState || DEFAULT_STUDIO_STATE);
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
   const [shaderError, setShaderError] = useState<string | null>(null);
@@ -36,6 +40,11 @@ export default function ShaderStudioPage() {
   const { bands, start, stop } = useAudioReactiveRuntime(state.audio.enabled);
   const webgpuRef = useRef(new WebGPUComputeService());
   const exportAbortControllerRef = useRef<AbortController | null>(null);
+  const readinessRef = useRef({
+    engineReady: false,
+    firstFrameRendered: false,
+    shaderCompiled: false,
+  });
   const [exportProgress, setExportProgress] = useState(0);
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportInProgress, setExportInProgress] = useState(false);
@@ -50,7 +59,55 @@ export default function ShaderStudioPage() {
 
   useStudioPersistence(state);
 
-  const handleLoaded = useCallback(() => setLoading(false), []);
+  const handleEngineReady = useCallback(() => {
+    readinessRef.current.engineReady = true;
+    setEngineReady(true);
+  }, []);
+
+  const handleFirstFrame = useCallback(() => {
+    readinessRef.current.firstFrameRendered = true;
+    setFirstFrameRendered(true);
+    setLoading(false);
+  }, []);
+
+  const handleShaderCompiled = useCallback(() => {
+    readinessRef.current.shaderCompiled = true;
+    setShaderCompiled(true);
+  }, []);
+
+  const handleRuntimeError = useCallback((message: string | null) => {
+    setRuntimeError(message);
+    if (message) {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    setRuntimeError(null);
+    setEngineReady(false);
+    setFirstFrameRendered(false);
+    setShaderCompiled(false);
+    readinessRef.current = {
+      engineReady: false,
+      firstFrameRendered: false,
+      shaderCompiled: false,
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      if (!readinessRef.current.firstFrameRendered) {
+        const details = [
+          readinessRef.current.engineReady ? null : 'WebGL context creation failed or was blocked',
+          readinessRef.current.shaderCompiled ? null : 'shader compile error or stalled pipeline',
+        ].filter(Boolean);
+        const reason = details.length > 0 ? details.join(' · ') : 'render loop did not produce a frame';
+        setRuntimeError(`Engine readiness timeout: ${reason}`);
+        setLoading(false);
+      }
+    }, 7000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [compileKey]);
 
   const { status: midiStatus } = useMidiRuntime(state.midi.enabled, state.midi.mappedCc, (target, normalizedValue) => {
     setParams((prev) => ({
@@ -115,6 +172,7 @@ export default function ShaderStudioPage() {
   const handleCompile = useCallback(() => {
     setCompileKey((k) => k + 1);
     setShaderError(null);
+    setRuntimeError(null);
   }, []);
 
   const handleExportCode = useCallback(() => {
@@ -138,7 +196,7 @@ export default function ShaderStudioPage() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
-      {loading && <GPULoader onLoaded={handleLoaded} />}
+      {loading && <GPULoader onLoaded={() => undefined} />}
       <BabylonCanvas
         key={compileKey}
         params={mappedParams}
@@ -146,7 +204,11 @@ export default function ShaderStudioPage() {
         fragmentShader={fragmentShader}
         shaderToyChannels={state.shaderToy.channels}
         onCanvasReady={setCanvasEl}
+        onEngineReady={handleEngineReady}
+        onFirstFrame={handleFirstFrame}
+        onShaderCompiled={handleShaderCompiled}
         onShaderError={setShaderError}
+        onRuntimeError={handleRuntimeError}
       />
 
       <header className="glass-panel absolute left-4 right-4 top-4 z-30 flex h-12 items-center justify-between rounded-xl px-4">
@@ -161,6 +223,13 @@ export default function ShaderStudioPage() {
         <section className="glass-panel absolute left-[460px] top-20 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
           <p className="mb-1 font-semibold">Shader compile/runtime error</p>
           <pre className="max-h-28 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{shaderError}</pre>
+        </section>
+      )}
+
+      {runtimeError && (
+        <section className="glass-panel absolute left-[460px] top-56 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
+          <p className="mb-1 font-semibold">Engine readiness failed</p>
+          <pre className="max-h-28 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{runtimeError}</pre>
         </section>
       )}
 
