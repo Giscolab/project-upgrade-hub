@@ -3,6 +3,7 @@ import BabylonCanvas from '@/components/shader/BabylonCanvas';
 import GPULoader from '@/components/shader/GPULoader';
 import ShaderControls from './components/ShaderControls';
 import AudioVideoControls from './components/AudioVideoControls';
+import GlslEditorPanel from './components/GlslEditorPanel';
 import LegacyMigrationSummary from './components/LegacyMigrationSummary';
 import MigrationChecklistPanel from './components/MigrationChecklistPanel';
 import { formatStatus } from './config/defaults';
@@ -11,8 +12,10 @@ import { useAudioReactiveRuntime } from './hooks/useAudioReactiveRuntime';
 import { useMidiRuntime } from './hooks/useMidiRuntime';
 import { DEFAULT_STUDIO_STATE } from './config/studioDefaults';
 import { exportShadertoyShader } from './services/shadertoyExportService';
+import { exportShaderSource } from './services/shaderExportService';
 import { downloadBlob, recordCanvasVideo } from './services/videoExportService';
 import { WebGPUComputeService } from './services/webgpuComputeService';
+import { DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 import { StudioState } from './types';
 
 export default function ShaderStudioPage() {
@@ -24,6 +27,12 @@ export default function ShaderStudioPage() {
   const [webgpuStatus, setWebgpuStatus] = useState(
     WebGPUComputeService.isSupported() ? 'WebGPU disponible (test non exécuté)' : 'WebGPU indisponible sur ce navigateur',
   );
+
+  // GLSL editor state
+  const [vertexShader, setVertexShader] = useState(DEFAULT_VERTEX_SHADER);
+  const [fragmentShader, setFragmentShader] = useState(DEFAULT_FRAGMENT_SHADER);
+  const [compileKey, setCompileKey] = useState(0);
+
   const { bands, start, stop } = useAudioReactiveRuntime(state.audio.enabled);
   const webgpuRef = useRef(new WebGPUComputeService());
 
@@ -71,17 +80,22 @@ export default function ShaderStudioPage() {
     exportShadertoyShader(state.shader, state.shaderToy.channels);
   }, [state.shader, state.shaderToy.channels]);
 
+  const handleCompile = useCallback(() => {
+    setCompileKey((k) => k + 1);
+    setShaderError(null);
+  }, []);
+
+  const handleExportCode = useCallback(() => {
+    exportShaderSource(fragmentShader, `shader-${Date.now()}.frag`);
+  }, [fragmentShader]);
+
   const handleRunWebGPU = useCallback(async () => {
     if (!WebGPUComputeService.isSupported()) {
       setWebgpuStatus('WebGPU indisponible sur ce navigateur');
       return;
     }
-
     try {
-      const result = await webgpuRef.current.runParticleSimulation({
-        particleCount: 2048,
-        deltaTime: 0.016,
-      });
+      const result = await webgpuRef.current.runParticleSimulation({ particleCount: 2048, deltaTime: 0.016 });
       setWebgpuStatus(
         `Simulation WebGPU OK · ${result.particleCount} particules · sample=(${result.sample.x.toFixed(2)}, ${result.sample.y.toFixed(2)})`,
       );
@@ -94,7 +108,10 @@ export default function ShaderStudioPage() {
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       {loading && <GPULoader onLoaded={handleLoaded} />}
       <BabylonCanvas
+        key={compileKey}
         params={mappedParams}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
         shaderToyChannels={state.shaderToy.channels}
         onCanvasReady={setCanvasEl}
         onShaderError={setShaderError}
@@ -108,13 +125,22 @@ export default function ShaderStudioPage() {
         <div className="text-xs text-muted-foreground">Unification React en cours</div>
       </header>
 
-
       {shaderError && (
-        <section className="glass-panel absolute left-4 top-20 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
+        <section className="glass-panel absolute left-[460px] top-20 z-30 max-w-xl rounded-lg border border-destructive/40 p-3 text-xs text-destructive">
           <p className="mb-1 font-semibold">Shader compile/runtime error</p>
           <pre className="max-h-28 overflow-auto whitespace-pre-wrap text-[11px] leading-relaxed">{shaderError}</pre>
         </section>
       )}
+
+      {/* Phase 2: GLSL Editor Panel */}
+      <GlslEditorPanel
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        onVertexChange={setVertexShader}
+        onFragmentChange={setFragmentShader}
+        onCompile={handleCompile}
+        onExportCode={handleExportCode}
+      />
 
       <ShaderControls params={params} onParamsChange={setParams} />
       <AudioVideoControls
@@ -142,7 +168,7 @@ export default function ShaderStudioPage() {
 
       <div className="glass-panel absolute bottom-4 left-4 right-4 z-30 flex h-8 items-center justify-between rounded-lg px-4 text-xs text-muted-foreground">
         <span>{formatStatus(params)}</span>
-        <span>Double-click canvas for fullscreen</span>
+        <span>Double-click canvas for fullscreen · Ctrl+S pour compiler</span>
       </div>
     </div>
   );
