@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import BabylonCanvas from '@/components/shader/BabylonCanvas';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GPULoader from '@/components/shader/GPULoader';
 import ShaderControls from './components/ShaderControls';
 import AudioVideoControls from './components/AudioVideoControls';
@@ -25,6 +24,8 @@ interface NamedPreset {
 }
 
 const PRESET_STORAGE_KEY = 'shader-studio-react-presets-v3';
+
+const BabylonCanvas = lazy(() => import('@/components/shader/BabylonCanvas'));
 
 function readPresetLibrary(): Record<string, NamedPreset> {
   try {
@@ -308,7 +309,8 @@ export default function ShaderStudioPage() {
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-background">
       {loading && <GPULoader onLoaded={() => undefined} />}
-      <BabylonCanvas
+      <Suspense fallback={null}>
+        <BabylonCanvas
         key={compileKey}
         params={mappedParams}
         vertexShader={vertexShader}
@@ -320,7 +322,8 @@ export default function ShaderStudioPage() {
         onShaderCompiled={handleShaderCompiled}
         onShaderError={setShaderError}
         onRuntimeError={handleRuntimeError}
-      />
+        />
+      </Suspense>
 
       <header className="glass-panel absolute left-4 right-4 top-4 z-30 flex h-12 items-center justify-between rounded-xl px-4">
         <div className="flex items-center gap-3">

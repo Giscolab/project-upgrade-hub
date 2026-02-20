@@ -87,8 +87,9 @@ export function useAudioReactiveRuntime(enabled: boolean, beatThreshold: number)
   const startMicrophone = useCallback(async () => {
     if (!enabled || active || !navigator.mediaDevices?.getUserMedia) return;
 
+    const { createAudioContext } = await import('./audioRuntime');
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const context = new AudioContext();
+    const context = createAudioContext();
     const source = context.createMediaStreamSource(stream);
     const analyser = context.createAnalyser();
     analyser.fftSize = 1024;
@@ -108,13 +109,12 @@ export function useAudioReactiveRuntime(enabled: boolean, beatThreshold: number)
   const startFile = useCallback(async (file: File) => {
     if (!enabled || active) return;
 
-    const context = new AudioContext();
+    const { createAudioContext, createLoopingAudioElement } = await import('./audioRuntime');
+    const context = createAudioContext();
     const analyser = context.createAnalyser();
     analyser.fftSize = 1024;
 
-    const audioEl = new Audio(URL.createObjectURL(file));
-    audioEl.loop = true;
-    audioEl.crossOrigin = 'anonymous';
+    const audioEl = createLoopingAudioElement(file);
 
     const source = context.createMediaElementSource(audioEl);
     source.connect(analyser);
