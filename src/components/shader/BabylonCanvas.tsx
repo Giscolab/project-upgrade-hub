@@ -22,7 +22,11 @@ interface BabylonCanvasProps {
   fragmentShader?: string;
   shaderToyChannels?: Array<string | null>;
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
+  onEngineReady?: () => void;
+  onFirstFrame?: () => void;
+  onShaderCompiled?: () => void;
   onShaderError?: (message: string | null) => void;
+  onRuntimeError?: (message: string | null) => void;
 }
 
 const SHADERTOY_CHANNEL_COUNT = 4;
@@ -71,7 +75,18 @@ function createMeshForGeometry(type: string, scene: Scene): Mesh {
   }
 }
 
-const BabylonCanvas = ({ params, vertexShader, fragmentShader, shaderToyChannels, onCanvasReady, onShaderError }: BabylonCanvasProps) => {
+const BabylonCanvas = ({
+  params,
+  vertexShader,
+  fragmentShader,
+  shaderToyChannels,
+  onCanvasReady,
+  onEngineReady,
+  onFirstFrame,
+  onShaderCompiled,
+  onShaderError,
+  onRuntimeError,
+}: BabylonCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -86,13 +101,30 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, shaderToyChannels
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    onShaderError?.(null);
+    onRuntimeError?.(null);
+
     // Cleanup previous
     if (engineRef.current) {
       engineRef.current.dispose();
     }
 
-    const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    let engine: Engine;
+    try {
+      engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'unknown reason';
+      onRuntimeError?.(`WebGL context creation failed: ${reason}`);
+      return;
+    }
+
+    if (!engine) {
+      onRuntimeError?.('WebGL context creation failed: engine instance is unavailable');
+      return;
+    }
+
     engineRef.current = engine;
+    onEngineReady?.();
 
     const scene = new Scene(engine);
     sceneRef.current = scene;
@@ -214,9 +246,14 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, shaderToyChannels
     postPipeline.bloomWeight = paramsRef.current.postProcessing.bloomIntensity;
 
     // Render loop
+    let hasReportedCriticalError = false;
+    let hasRenderedFirstFrame = false;
+    let hasReportedShaderCompiled = false;
+
     engine.runRenderLoop(() => {
-      const p = paramsRef.current;
-      timeRef.current += engine.getDeltaTime() * 0.001 * p.speed;
+      try {
+        const p = paramsRef.current;
+        timeRef.current += engine.getDeltaTime() * 0.001 * p.speed;
 
       material.setFloat('uTime', timeRef.current);
       material.setFloat('uAmplitude', p.amplitude);
@@ -271,10 +308,36 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, shaderToyChannels
       postPipeline.bloomEnabled = p.postProcessing.bloom;
       postPipeline.bloomWeight = p.postProcessing.bloomIntensity;
 
-      const shaderError = material.getEffect()?.getCompilationError() || null;
-      onShaderError?.(shaderError);
+        const effect = material.getEffect();
+        const shaderError = effect?.getCompilationError() || null;
+        onShaderError?.(shaderError);
 
-      scene.render();
+        if (shaderError && !hasReportedCriticalError) {
+          hasReportedCriticalError = true;
+          onRuntimeError?.(`Shader compile error: ${shaderError}`);
+          engine.stopRenderLoop();
+          return;
+        }
+
+        if (!shaderError && !hasReportedShaderCompiled && effect?.isReady()) {
+          hasReportedShaderCompiled = true;
+          onShaderCompiled?.();
+        }
+
+        scene.render();
+
+        if (!hasRenderedFirstFrame) {
+          hasRenderedFirstFrame = true;
+          onFirstFrame?.();
+        }
+      } catch (error) {
+        if (!hasReportedCriticalError) {
+          hasReportedCriticalError = true;
+          const reason = error instanceof Error ? error.message : 'unknown runtime failure';
+          onRuntimeError?.(`Render loop failure: ${reason}`);
+          engine.stopRenderLoop();
+        }
+      }
     });
 
     const handleResize = () => engine.resize();
@@ -285,7 +348,17 @@ const BabylonCanvas = ({ params, vertexShader, fragmentShader, shaderToyChannels
       channels.forEach((channel) => channel.dispose());
       engine.dispose();
     };
-  }, [vertexShader, fragmentShader, params.geometry, onShaderError, shaderToyChannels]);
+  }, [
+    vertexShader,
+    fragmentShader,
+    params.geometry,
+    onEngineReady,
+    onFirstFrame,
+    onRuntimeError,
+    onShaderCompiled,
+    onShaderError,
+    shaderToyChannels,
+  ]);
 
   // Initial setup & re-setup on geometry/shader change
   useEffect(() => {
