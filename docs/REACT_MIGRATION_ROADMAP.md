@@ -34,7 +34,7 @@ Objectif: ne supprimer un fichier legacy **qu’après couverture à 100%**.
 
 ### B. Contrôles UI
 - [x] Contrôles principaux geometry/noise/sliders/toggles migrés.
-- [ ] Contrôles material avancés (metalness/fresnel/rim) complets.
+- [x] Contrôles material avancés (metalness/fresnel/rim) complets.
 - [ ] Contrôles texture/blend complets.
 - [ ] Raccourcis actions migration (liens directs par item) complets.
 
