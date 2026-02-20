@@ -50,6 +50,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Migration coverage panels are now rendered in the main Shader Studio page',
       'ShaderControls toggle rendering loop has been stabilized and typechecked',
       'Shader compile/runtime error overlay is now wired in ShaderStudioPage',
+      'Preuve de parité entrypoint legacy main.js documentée: docs/migration-evidence/main-js-parity.md',
     ],
     remainingWork: [
       'Add texture layers and blend mode controls',
@@ -61,6 +62,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Every React control updates rendered output',
       'Reset restores same values as documented defaults',
       'Keyboard accessibility and focus order validated',
+      'Preuve Gate 1–5 main.js disponible: docs/migration-evidence/main-js-parity.md',
     ],
   },
   {
@@ -140,6 +142,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
       'Bouton React Export ShaderToy branché au panneau Audio/Export',
       'Service WebGPUComputeService TypeScript branché à un bouton de diagnostic React',
       'Legacy JS bridge files now proxy to React-first services (App, main, export, WebGPU)',
+      'Preuve de parité Shadertoy bridge documentée: docs/migration-evidence/shadertoy-exporter-parity.md',
     ],
     remainingWork: [
       'Channels ShaderToy avancés (textures multiples) configurables dans l UI',
@@ -147,6 +150,7 @@ export const MIGRATION_PLAN: MigrationItem[] = [
     ],
     validationChecks: [
       'Le fichier .frag exporté contient les paramètres shader React courants',
+      'Preuve Gate 1–5 disponible: docs/migration-evidence/shadertoy-exporter-parity.md',
       'Le test WebGPU affiche un statut succès/erreur sans crash UI',
     ],
   },
