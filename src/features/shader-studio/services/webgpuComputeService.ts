@@ -48,6 +48,11 @@ export interface ParticleSimulationResult {
   sample: { x: number; y: number; vx: number; vy: number };
 }
 
+// WebGPU constants (avoid global references for TS compat)
+const GPU_BUFFER_USAGE = { STORAGE: 0x0080, COPY_DST: 0x0008, COPY_SRC: 0x0004, MAP_READ: 0x0001, UNIFORM: 0x0040 };
+const GPU_SHADER_STAGE = { COMPUTE: 0x0004 };
+const GPU_MAP_MODE = { READ: 0x0001 };
+
 export class WebGPUComputeService {
   private device: GPUDeviceLike | null = null;
   private adapter: GPUAdapterLike | null = null;
@@ -98,18 +103,18 @@ export class WebGPUComputeService {
 
     const simulationBuffer = this.device.createBuffer({
       size: initial.byteLength,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+      usage: GPU_BUFFER_USAGE.STORAGE | GPU_BUFFER_USAGE.COPY_DST | GPU_BUFFER_USAGE.COPY_SRC,
     });
     this.device.queue.writeBuffer(simulationBuffer, 0, initial);
 
     const readbackBuffer = this.device.createBuffer({
       size: initial.byteLength,
-      usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+      usage: GPU_BUFFER_USAGE.MAP_READ | GPU_BUFFER_USAGE.COPY_DST,
     });
 
     const paramsBuffer = this.device.createBuffer({
       size: 16,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      usage: GPU_BUFFER_USAGE.UNIFORM | GPU_BUFFER_USAGE.COPY_DST,
     });
     this.device.queue.writeBuffer(paramsBuffer, 0, new Float32Array([deltaTime, particleCount, 0, 0]));
 
@@ -141,8 +146,8 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
     const bindGroupLayout = this.device.createBindGroupLayout({
       entries: [
-        { binding: 0, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'storage' } },
-        { binding: 1, visibility: GPUShaderStage.COMPUTE, buffer: { type: 'uniform' } },
+        { binding: 0, visibility: GPU_SHADER_STAGE.COMPUTE, buffer: { type: 'storage' } },
+        { binding: 1, visibility: GPU_SHADER_STAGE.COMPUTE, buffer: { type: 'uniform' } },
       ],
     });
 
@@ -169,7 +174,7 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
     encoder.copyBufferToBuffer(simulationBuffer, 0, readbackBuffer, 0, initial.byteLength);
     this.device.queue.submit([encoder.finish()]);
 
-    await readbackBuffer.mapAsync(GPUMapMode.READ);
+    await readbackBuffer.mapAsync(GPU_MAP_MODE.READ);
     const copy = readbackBuffer.getMappedRange().slice(0);
     const out = new Float32Array(copy);
     readbackBuffer.unmap();
