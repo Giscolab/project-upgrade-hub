@@ -112,12 +112,125 @@ export default function ShaderControls({ params, onParamsChange }: ShaderControl
         onChange={(frequency) => onParamsChange({ ...params, frequency })}
       />
       <ParamSlider
+        id="scale"
+        label="Scale"
+        value={params.scale}
+        {...PARAM_RANGE.scale}
+        onChange={(scale) => onParamsChange({ ...params, scale })}
+      />
+
+      <ParamSlider
         id="rotationSpeed"
         label="Rotation"
         value={params.rotationSpeed}
         {...PARAM_RANGE.rotationSpeed}
         onChange={(rotationSpeed) => onParamsChange({ ...params, rotationSpeed })}
       />
+
+      <div className="space-y-2 rounded-md border border-border/50 p-2">
+        <Label className="text-xs">Material</Label>
+        <ParamSlider
+          id="metalness"
+          label="Metalness"
+          value={params.material.metalness}
+          min={0}
+          max={1}
+          step={0.01}
+          onChange={(metalness) => onParamsChange({ ...params, material: { ...params.material, metalness } })}
+        />
+        <ParamSlider
+          id="rimPower"
+          label="Rim"
+          value={params.material.rimPower}
+          min={0.5}
+          max={8}
+          step={0.1}
+          onChange={(rimPower) => onParamsChange({ ...params, material: { ...params.material, rimPower } })}
+        />
+        <ParamSlider
+          id="fresnelStrength"
+          label="Fresnel"
+          value={params.material.fresnelStrength}
+          min={0}
+          max={8}
+          step={0.1}
+          onChange={(fresnelStrength) => onParamsChange({ ...params, material: { ...params.material, fresnelStrength } })}
+        />
+      </div>
+
+      <div className="space-y-2 rounded-md border border-border/50 p-2">
+        <Label className="text-xs">Post FX intensity</Label>
+        <ParamSlider
+          id="bloomIntensity"
+          label="Bloom"
+          value={params.postProcessing.bloomIntensity}
+          min={0}
+          max={2}
+          step={0.01}
+          onChange={(bloomIntensity) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, bloomIntensity } })}
+        />
+        <ParamSlider
+          id="rgbShiftAmount"
+          label="RGB shift"
+          value={params.postProcessing.rgbShiftAmount}
+          min={0}
+          max={0.02}
+          step={0.0001}
+          onChange={(rgbShiftAmount) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, rgbShiftAmount } })}
+        />
+        <ParamSlider
+          id="glitchIntensity"
+          label="Glitch"
+          value={params.postProcessing.glitchIntensity}
+          min={0}
+          max={1}
+          step={0.01}
+          onChange={(glitchIntensity) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, glitchIntensity } })}
+        />
+        <ParamSlider
+          id="pixelSize"
+          label="Pixel size"
+          value={params.postProcessing.pixelSize}
+          min={1}
+          max={16}
+          step={1}
+          onChange={(pixelSize) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, pixelSize } })}
+        />
+        <ParamSlider
+          id="vignetteIntensity"
+          label="Vignette"
+          value={params.postProcessing.vignetteIntensity}
+          min={0}
+          max={1}
+          step={0.01}
+          onChange={(vignetteIntensity) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, vignetteIntensity } })}
+        />
+      </div>
+
+      <div className="space-y-2 rounded-md border border-border/50 p-2">
+        <Label className="text-xs">Colors</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              ['color1', 'Primary'],
+              ['color2', 'Secondary'],
+              ['color3', 'Accent'],
+              ['background', 'Background'],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="space-y-1 text-xs">
+              <span>{label}</span>
+              <input
+                type="color"
+                aria-label={label}
+                className="h-8 w-full cursor-pointer rounded border border-border bg-transparent"
+                value={params.colors[key]}
+                onChange={(event) => onParamsChange({ ...params, colors: { ...params.colors, [key]: event.target.value } })}
+              />
+            </label>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 pt-2">
         {toggles.map((toggle) => {
