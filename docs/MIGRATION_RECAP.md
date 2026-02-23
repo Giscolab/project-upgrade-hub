@@ -44,3 +44,9 @@ La migration sera considérée terminée uniquement si :
 - Exposition des nouvelles options legacy dans les sélecteurs React de configuration.
 - Enrichissement de l’export ShaderToy React avec les chunks de bruit legacy manquants afin d’éviter les régressions de conversion.
 - Extension du mapping de géométrie Babylon pour couvrir des formes/alias supplémentaires côté migration.
+
+## Mise à jour incrémentale — REACT_INTEGRATION_MIGRATION_002
+- Intégration d’un module dédié `legacyShaderStudioV5` qui centralise les shaders vertex/fragment legacy, les chunks de bruit, des presets legacy et des helpers de conversion.
+- Ajout d’un workflow React permettant d’appliquer un preset legacy dans l’UI (application des paramètres + génération/activation du couple shader legacy correspondant).
+- Extension du runtime Babylon pour exposer les uniforms/samplers nécessaires aux shaders legacy (`uColorA-D`, `uResolution`, `uTexture`, `uLayer1/2`, `uMatcap`, paramètres audio et grading) tout en conservant la compatibilité avec le flux actuel.
+- Refactor du service d’export ShaderToy pour réutiliser la source de chunks legacy centralisée et éviter la duplication.
