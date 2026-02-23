@@ -3,8 +3,8 @@ import { DEFAULT_SHADER_PARAMS, ShaderParams } from '@/types/shader';
 import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from '../config/studioDefaults';
 import { StudioState } from '../types';
 
-const STORAGE_KEY = 'shader-studio-react-state-v3';
-const LEGACY_STORAGE_KEYS = ['shader-studio-react-state-v2', 'shader-studio-react-state'];
+const STORAGE_KEY = 'shader-studio-react-state-v4';
+const LEGACY_STORAGE_KEYS = ['shader-studio-react-state-v3', 'shader-studio-react-state-v2', 'shader-studio-react-state'];
 
 interface PersistedStudioState {
   version: number;
