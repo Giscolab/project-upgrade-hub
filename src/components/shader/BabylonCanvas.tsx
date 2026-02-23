@@ -3,6 +3,7 @@ import {
   Engine,
   Scene,
   ArcRotateCamera,
+  Vector2,
   Vector3,
   ShaderMaterial,
   Mesh,
@@ -323,8 +324,8 @@ const BabylonCanvas = ({
       material.setFloat('uGlowRadius', 0.75);
       material.setFloat('uFresnelStrength', p.material.fresnelStrength);
       material.setFloat('iTime', timeRef.current);
-      material.setFloat2('uResolution', engine.getRenderWidth(), engine.getRenderHeight());
-      material.setFloat2('uMouse', 0.5, 0.5);
+      material.setVector2('uResolution', new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+      material.setVector2('uMouse', new Vector2(0.5, 0.5));
       material.setVector3('iResolution', new Vector3(engine.getRenderWidth(), engine.getRenderHeight(), 1));
       material.setVector3('iMouse', Vector3.Zero());
       material.setArray4('iChannelTime', [timeRef.current, timeRef.current, timeRef.current, timeRef.current]);
