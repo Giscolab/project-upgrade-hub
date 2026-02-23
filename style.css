@@ -1,8 +1,0 @@
-/*
- * Legacy stylesheet deprecated after React migration.
- * Keep this file intentionally minimal while entrypoint cleanup is in progress.
- */
-
-canvas.drag-over {
-  box-shadow: inset 0 0 0 3px rgba(5, 242, 219, 0.9);
-}
