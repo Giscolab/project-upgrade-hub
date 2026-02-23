@@ -16,6 +16,7 @@ import { downloadBlob, exportCanvasPng, recordCanvasVideo } from './services/vid
 import { WebGPUComputeService } from './services/webgpuComputeService';
 import { DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 import { StudioState } from './types';
+import { LEGACY_PRESETS, applyLegacyPresetToShaderParams, buildLegacyShaderPair } from './config/legacyShaderStudioV5';
 
 interface NamedPreset {
   version: number;
@@ -63,6 +64,7 @@ export default function ShaderStudioPage() {
   const [compileKey, setCompileKey] = useState(0);
   const [presetLibrary, setPresetLibrary] = useState<Record<string, NamedPreset>>(() => readPresetLibrary());
   const [selectedPresetName, setSelectedPresetName] = useState('');
+  const [selectedLegacyPreset, setSelectedLegacyPreset] = useState('');
 
   const { bands, beatPulse, paused, sourceLabel, startMicrophone, startFile, pause, resume, stop } = useAudioReactiveRuntime(
     state.audio.enabled,
@@ -295,6 +297,23 @@ export default function ShaderStudioPage() {
 
   const handleExportCode = useCallback(() => exportShaderSource(fragmentShader, `shader-${Date.now()}.frag`), [fragmentShader]);
 
+  const handleApplyLegacyPreset = useCallback(() => {
+    const preset = LEGACY_PRESETS[selectedLegacyPreset];
+    if (!preset) return;
+
+    updateState((prev) => ({
+      ...prev,
+      shader: applyLegacyPresetToShaderParams(prev.shader, preset),
+    }));
+
+    const { vertex, fragment } = buildLegacyShaderPair(preset.noiseType);
+    setVertexShader(vertex);
+    setFragmentShader(fragment);
+    setCompileKey((k) => k + 1);
+    setShaderError(null);
+    setRuntimeError(null);
+  }, [selectedLegacyPreset, updateState]);
+
   const handleRunWebGPU = useCallback(async () => {
     if (!WebGPUComputeService.isSupported()) {
       setWebgpuStatus('WebGPU indisponible sur ce navigateur');
@@ -439,6 +458,10 @@ export default function ShaderStudioPage() {
           onDeletePreset={handleDeletePreset}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          legacyPresetNames={Object.keys(LEGACY_PRESETS)}
+          selectedLegacyPreset={selectedLegacyPreset}
+          onSelectLegacyPreset={setSelectedLegacyPreset}
+          onApplyLegacyPreset={handleApplyLegacyPreset}
         />
       )}
     />

@@ -43,6 +43,10 @@ interface RightPanelProps {
   onDeletePreset: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  legacyPresetNames: string[];
+  selectedLegacyPreset: string;
+  onSelectLegacyPreset: (name: string) => void;
+  onApplyLegacyPreset: () => void;
 }
 
 const audioTargets: AudioReactiveSettings['mapBassTo'][] = ['displacement', 'speed', 'scale', 'none'];
@@ -66,6 +70,8 @@ export default function RightPanel(props: RightPanelProps) {
     selectedPresetName,
     canUndo,
     canRedo,
+    legacyPresetNames,
+    selectedLegacyPreset,
   } = props;
 
   return (
@@ -80,6 +86,25 @@ export default function RightPanel(props: RightPanelProps) {
           <button className="col-span-2 rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs disabled:opacity-50" onClick={props.onRedo} disabled={!canRedo}>Redo</button>
         </div>
         {presetNames.length > 0 && <p className="text-[11px] text-[#8888aa]">{presetNames.join(', ')}</p>}
+      </PanelSection>
+
+
+      <PanelSection title="Legacy shaders.js presets" defaultOpen={false}>
+        <select
+          className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs"
+          value={selectedLegacyPreset}
+          onChange={(e) => props.onSelectLegacyPreset(e.target.value)}
+        >
+          <option value="">Sélectionner un preset legacy</option>
+          {legacyPresetNames.map((name) => <option key={name} value={name}>{name}</option>)}
+        </select>
+        <button
+          className="w-full rounded border border-[#2a2a3a] bg-[#6c63ff] px-2 py-1 text-xs text-white disabled:opacity-50"
+          onClick={props.onApplyLegacyPreset}
+          disabled={!selectedLegacyPreset}
+        >
+          Appliquer preset legacy (shader + params)
+        </button>
       </PanelSection>
 
       <PanelSection title="Géométrie & Shader" defaultOpen>
