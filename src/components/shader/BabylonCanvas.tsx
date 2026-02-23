@@ -61,12 +61,22 @@ function createMeshForGeometry(type: string, scene: Scene): Mesh {
     case 'plane': return MeshBuilder.CreatePlane('mesh', { size: 2.5 }, scene);
     case 'cylinder': return MeshBuilder.CreateCylinder('mesh', { height: 2, diameterTop: 1, diameterBottom: 1, tessellation: 128 }, scene);
     case 'cone': return MeshBuilder.CreateCylinder('mesh', { height: 2, diameterTop: 0, diameterBottom: 1.4, tessellation: 128 }, scene);
-    case 'torusKnot': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.3, radialSegments: 128, tubularSegments: 64 }, scene);
-    case 'icosphere': return MeshBuilder.CreateIcoSphere('mesh', { radius: 1, subdivisions: 4 }, scene);
+    case 'torusKnot':
+    case 'torusknot': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.3, radialSegments: 128, tubularSegments: 64 }, scene);
+    case 'knot23': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.28, p: 2, q: 3, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'knot35':
+    case 'trefoil': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.28, p: 3, q: 5, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'spring': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.75, tube: 0.18, p: 2, q: 5, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'mobius': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.72, tube: 0.2, p: 1, q: 2, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'klein': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.9, tube: 0.24, p: 4, q: 3, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'icosphere':
+    case 'icosahedron': return MeshBuilder.CreateIcoSphere('mesh', { radius: 1, subdivisions: 4 }, scene);
     case 'octahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 1, size: 1.2 }, scene);
     case 'dodecahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 3, size: 1.2 }, scene);
     case 'tetrahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 0, size: 1.2 }, scene);
     case 'capsule': return MeshBuilder.CreateCapsule('mesh', { height: 2, radius: 0.6, tessellation: 24 }, scene);
+    case 'heart': return MeshBuilder.CreateSphere('mesh', { diameterX: 1.7, diameterY: 1.5, diameterZ: 1.7, segments: 96 }, scene);
+    case 'gear': return MeshBuilder.CreateCylinder('mesh', { height: 0.7, diameterTop: 1.8, diameterBottom: 1.8, tessellation: 18 }, scene);
     case 'disc': return MeshBuilder.CreateDisc('mesh', { radius: 1.2, tessellation: 128 }, scene);
     case 'ground': return MeshBuilder.CreateGround('mesh', { width: 3, height: 3, subdivisions: 128 }, scene);
     case 'hemisphere': return MeshBuilder.CreateSphere('mesh', { diameter: 2, segments: 64, slice: 0.5 }, scene);
