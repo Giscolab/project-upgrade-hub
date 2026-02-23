@@ -61,12 +61,22 @@ function createMeshForGeometry(type: string, scene: Scene): Mesh {
     case 'plane': return MeshBuilder.CreatePlane('mesh', { size: 2.5 }, scene);
     case 'cylinder': return MeshBuilder.CreateCylinder('mesh', { height: 2, diameterTop: 1, diameterBottom: 1, tessellation: 128 }, scene);
     case 'cone': return MeshBuilder.CreateCylinder('mesh', { height: 2, diameterTop: 0, diameterBottom: 1.4, tessellation: 128 }, scene);
-    case 'torusKnot': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.3, radialSegments: 128, tubularSegments: 64 }, scene);
-    case 'icosphere': return MeshBuilder.CreateIcoSphere('mesh', { radius: 1, subdivisions: 4 }, scene);
+    case 'torusKnot':
+    case 'torusknot': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.3, radialSegments: 128, tubularSegments: 64 }, scene);
+    case 'knot23': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.28, p: 2, q: 3, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'knot35':
+    case 'trefoil': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.8, tube: 0.28, p: 3, q: 5, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'spring': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.75, tube: 0.18, p: 2, q: 5, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'mobius': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.72, tube: 0.2, p: 1, q: 2, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'klein': return MeshBuilder.CreateTorusKnot('mesh', { radius: 0.9, tube: 0.24, p: 4, q: 3, radialSegments: 128, tubularSegments: 128 }, scene);
+    case 'icosphere':
+    case 'icosahedron': return MeshBuilder.CreateIcoSphere('mesh', { radius: 1, subdivisions: 4 }, scene);
     case 'octahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 1, size: 1.2 }, scene);
     case 'dodecahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 3, size: 1.2 }, scene);
     case 'tetrahedron': return MeshBuilder.CreatePolyhedron('mesh', { type: 0, size: 1.2 }, scene);
     case 'capsule': return MeshBuilder.CreateCapsule('mesh', { height: 2, radius: 0.6, tessellation: 24 }, scene);
+    case 'heart': return MeshBuilder.CreateSphere('mesh', { diameterX: 1.7, diameterY: 1.5, diameterZ: 1.7, segments: 96 }, scene);
+    case 'gear': return MeshBuilder.CreateCylinder('mesh', { height: 0.7, diameterTop: 1.8, diameterBottom: 1.8, tessellation: 18 }, scene);
     case 'disc': return MeshBuilder.CreateDisc('mesh', { radius: 1.2, tessellation: 128 }, scene);
     case 'ground': return MeshBuilder.CreateGround('mesh', { width: 3, height: 3, subdivisions: 128 }, scene);
     case 'hemisphere': return MeshBuilder.CreateSphere('mesh', { diameter: 2, segments: 64, slice: 0.5 }, scene);
@@ -156,24 +166,52 @@ const BabylonCanvas = ({
         'world',
         'worldViewProjection',
         'uTime',
+        'uSpeed',
+        'uScale',
+        'uDisplacementStrength',
         'uAmplitude',
         'uFrequency',
         'uTwist',
         'uPulse',
         'uMorphFactor',
+        'uBass',
+        'uMid',
+        'uHigh',
+        'uOverall',
+        'uBassDisplace',
+        'uMidDisplace',
+        'uHighDisplace',
+        'uResolution',
+        'uColorA',
+        'uColorB',
+        'uColorC',
+        'uColorD',
+        'uMouse',
+        'uTextureMix',
+        'uLayerBlend1',
+        'uLayerBlend2',
+        'uLayerOpacity1',
+        'uLayerOpacity2',
         'uMetalness',
+        'uLightIntensity',
+        'uContrast',
+        'uSaturation',
+        'uGamma',
         'uRimPower',
+        'uRimColor',
         'uFresnelStrength',
+        'uGlowRadius',
         'uColor1',
         'uColor2',
         'uColor3',
+        'worldView',
         'iTime',
         'iResolution',
         'iMouse',
         'iChannelTime',
         'iChannelResolution',
       ],
-      samplers: ['iChannel0', 'iChannel1', 'iChannel2', 'iChannel3'],
+      samplers: ['iChannel0', 'iChannel1', 'iChannel2', 'iChannel3', 'uTexture', 'uLayer1', 'uLayer2', 'uMatcap'],
     });
 
     materialRef.current = material;
@@ -256,15 +294,37 @@ const BabylonCanvas = ({
         timeRef.current += engine.getDeltaTime() * 0.001 * p.speed;
 
       material.setFloat('uTime', timeRef.current);
+      material.setFloat('uSpeed', p.speed);
+      material.setFloat('uScale', p.scale);
+      material.setFloat('uDisplacementStrength', p.amplitude);
       material.setFloat('uAmplitude', p.amplitude);
       material.setFloat('uFrequency', p.frequency);
       material.setFloat('uTwist', p.material.twist);
       material.setFloat('uPulse', p.material.pulse);
       material.setFloat('uMorphFactor', p.material.morphFactor);
+      material.setFloat('uBass', 0.0);
+      material.setFloat('uMid', 0.0);
+      material.setFloat('uHigh', 0.0);
+      material.setFloat('uOverall', 0.0);
+      material.setFloat('uBassDisplace', 1.0);
+      material.setFloat('uMidDisplace', 1.0);
+      material.setFloat('uHighDisplace', 1.0);
+      material.setFloat('uTextureMix', 0.0);
+      material.setFloat('uLayerBlend1', 0.0);
+      material.setFloat('uLayerBlend2', 0.0);
+      material.setFloat('uLayerOpacity1', 0.0);
+      material.setFloat('uLayerOpacity2', 0.0);
       material.setFloat('uMetalness', p.material.metalness);
+      material.setFloat('uLightIntensity', 1.0);
+      material.setFloat('uContrast', 1.0);
+      material.setFloat('uSaturation', 1.0);
+      material.setFloat('uGamma', 1.0);
       material.setFloat('uRimPower', p.material.rimPower);
+      material.setFloat('uGlowRadius', 0.75);
       material.setFloat('uFresnelStrength', p.material.fresnelStrength);
       material.setFloat('iTime', timeRef.current);
+      material.setFloat2('uResolution', engine.getRenderWidth(), engine.getRenderHeight());
+      material.setFloat2('uMouse', 0.5, 0.5);
       material.setVector3('iResolution', new Vector3(engine.getRenderWidth(), engine.getRenderHeight(), 1));
       material.setVector3('iMouse', Vector3.Zero());
       material.setArray4('iChannelTime', [timeRef.current, timeRef.current, timeRef.current, timeRef.current]);
@@ -277,13 +337,23 @@ const BabylonCanvas = ({
       channels.forEach((channel, index) => {
         material.setTexture(`iChannel${index}`, channel);
       });
+      material.setTexture('uTexture', channels[0]);
+      material.setTexture('uLayer1', channels[1]);
+      material.setTexture('uLayer2', channels[2]);
+      material.setTexture('uMatcap', channels[3]);
 
       const c1 = hexToVec3(p.colors.color1);
       const c2 = hexToVec3(p.colors.color2);
       const c3 = hexToVec3(p.colors.color3);
+      const c4 = [(c1[0] + c2[0] + c3[0]) / 3, (c1[1] + c2[1] + c3[1]) / 3, (c1[2] + c2[2] + c3[2]) / 3] as const;
       material.setVector3('uColor1', new Vector3(c1[0], c1[1], c1[2]));
       material.setVector3('uColor2', new Vector3(c2[0], c2[1], c2[2]));
       material.setVector3('uColor3', new Vector3(c3[0], c3[1], c3[2]));
+      material.setVector3('uColorA', new Vector3(c1[0], c1[1], c1[2]));
+      material.setVector3('uColorB', new Vector3(c2[0], c2[1], c2[2]));
+      material.setVector3('uColorC', new Vector3(c3[0], c3[1], c3[2]));
+      material.setVector3('uColorD', new Vector3(c4[0], c4[1], c4[2]));
+      material.setVector3('uRimColor', new Vector3(c3[0], c3[1], c3[2]));
 
       if (mesh) {
         mesh.scaling.setAll(p.scale);
