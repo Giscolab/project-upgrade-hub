@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import GPULoader from '@/components/shader/GPULoader';
 import AppLayout from '@/components/layout/AppLayout';
 import RightPanel from '@/components/layout/RightPanel';
@@ -9,6 +9,8 @@ import { formatStatus } from './config/defaults';
 import { readPersistedStudioState, useStudioPersistence } from './hooks/useStudioPersistence';
 import { useAudioReactiveRuntime } from './hooks/useAudioReactiveRuntime';
 import { useMidiRuntime } from './hooks/useMidiRuntime';
+import { useOscRuntime } from './hooks/useOscRuntime';
+import { useWebcamChannel } from './hooks/useWebcamChannel';
 import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from './config/studioDefaults';
 import { exportShadertoyShader } from './services/shadertoyExportService';
 import { exportShaderSource } from './services/shaderExportService';
@@ -178,6 +180,23 @@ export default function ShaderStudioPage() {
     setParams((prev) => ({ ...prev, [target]: target === 'frequency' ? 0.1 + normalizedValue * 8 : normalizedValue * 2 }));
   });
 
+  const { status: oscRuntimeStatus } = useOscRuntime(
+    state.osc.enabled,
+    state.osc.url,
+    state.osc.route,
+    state.shader,
+    (patch) => setParams((prev) => ({ ...prev, ...patch, material: patch.material ?? prev.material })),
+  );
+
+  const [webcamEnabled, setWebcamEnabled] = useState(false);
+  const { webcamStream, webcamStatus } = useWebcamChannel(webcamEnabled);
+
+
+  useEffect(() => {
+    if (state.osc.status === oscRuntimeStatus) return;
+    updateState((prev) => ({ ...prev, osc: { ...prev.osc, status: oscRuntimeStatus } }), false);
+  }, [oscRuntimeStatus, state.osc.status, updateState]);
+
   const mappedParams = useMemo(() => {
     if (!state.audio.enabled) return params;
     const next = { ...params };
@@ -346,6 +365,30 @@ export default function ShaderStudioPage() {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
+
+  const handleCanvasDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.currentTarget.classList.add('drag-over');
+  }, []);
+
+  const handleCanvasDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.currentTarget.classList.remove('drag-over');
+  }, []);
+
+  const handleCanvasDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+
+    const file = event.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    updateState((prev) => {
+      const channels = [...prev.shaderToy.channels];
+      channels[0] = url;
+      return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+    });
+  }, [updateState]);
+
   const resolution = canvasEl ? `${canvasEl.width} x ${canvasEl.height}` : '—';
   const compileOk = engineReady && firstFrameRendered && shaderCompiled && !shaderError && !runtimeError;
 
@@ -366,7 +409,7 @@ export default function ShaderStudioPage() {
         />
       )}
       canvas={(
-        <div className="relative h-full w-full">
+        <div className="relative h-full w-full" onDragOver={handleCanvasDragOver} onDragLeave={handleCanvasDragLeave} onDrop={handleCanvasDrop}>
           {loading && <GPULoader onLoaded={() => undefined} />}
           <Suspense fallback={null}>
             <BabylonCanvas
@@ -375,6 +418,7 @@ export default function ShaderStudioPage() {
               vertexShader={vertexShader}
               fragmentShader={fragmentShader}
               shaderToyChannels={state.shaderToy.channels}
+              webcamStream={webcamStream}
               onCanvasReady={setCanvasEl}
               onEngineReady={handleEngineReady}
               onFirstFrame={handleFirstFrame}
@@ -412,6 +456,9 @@ export default function ShaderStudioPage() {
           onParamsChange={setParams}
           audio={state.audio}
           video={state.video}
+          osc={state.osc}
+          webcamEnabled={webcamEnabled}
+          webcamStatus={webcamStatus}
           midiStatus={midiStatus}
           webgpuStatus={webgpuStatus}
           exportProgress={exportProgress}
@@ -427,6 +474,8 @@ export default function ShaderStudioPage() {
           canRedo={future.length > 0}
           onAudioChange={(audio) => updateState((prev) => ({ ...prev, audio }))}
           onVideoChange={(video) => updateState((prev) => ({ ...prev, video }))}
+          onOscChange={(osc) => updateState((prev) => ({ ...prev, osc }))}
+          onToggleWebcam={() => setWebcamEnabled((prev) => !prev)}
           onStartMicrophone={() => {
             updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'mic', fileName: null } }));
             startMicrophone();

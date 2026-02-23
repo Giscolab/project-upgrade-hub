@@ -28,10 +28,18 @@ export interface ShaderToySettings {
   channels: Array<string | null>;
 }
 
+export interface OscSettings {
+  enabled: boolean;
+  url: string;
+  route: string;
+  status: string;
+}
+
 export interface StudioState {
   shader: import('@/types/shader').ShaderParams;
   audio: AudioReactiveSettings;
   video: VideoExportSettings;
   midi: MidiSettings;
   shaderToy: ShaderToySettings;
+  osc: OscSettings;
 }

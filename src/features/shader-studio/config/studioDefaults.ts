@@ -1,7 +1,7 @@
 import { DEFAULT_SHADER_PARAMS } from '@/types/shader';
 import { StudioState } from '../types';
 
-export const STUDIO_STATE_VERSION = 3;
+export const STUDIO_STATE_VERSION = 4;
 
 export const DEFAULT_STUDIO_STATE: StudioState = {
   shader: DEFAULT_SHADER_PARAMS,
@@ -34,5 +34,12 @@ export const DEFAULT_STUDIO_STATE: StudioState = {
   shaderToy: {
     enabled: false,
     channels: [null, null, null, null],
+  },
+
+  osc: {
+    enabled: false,
+    url: 'ws://localhost:8081',
+    route: '/shader',
+    status: 'Déconnecté',
   },
 };
