@@ -29,4 +29,14 @@ describe('buildShadertoyShaderFromParams', () => {
     const code = buildShadertoyShaderFromParams(DEFAULT_SHADER_PARAMS, ['audio-fft', null, null, null]);
     expect(code).toContain('float fft = texture(iChannel0');
   });
+
+  it('supporte les familles de bruit legacy ajoutées pour la migration', () => {
+    const code = buildShadertoyShaderFromParams({
+      ...DEFAULT_SHADER_PARAMS,
+      noise: 'plasma',
+    });
+
+    expect(code).toContain('float getNoise(vec2 st){');
+    expect(code).toContain('sin(st.x*3.)');
+  });
 });

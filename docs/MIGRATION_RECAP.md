@@ -37,3 +37,10 @@ La migration sera considérée terminée uniquement si :
 
 ## Mise à jour récente
 - Les fichiers legacy racine (`App.js`, `main.js`, `AudioEngine.js`, `MidiHandler.js`, `VideoRecorder.js`, `ShadertoyExporter.js`, `WebGPUCompute.js`, `Config.js`, `shaders.js`) ont été réécrits en ponts de compatibilité qui délèguent désormais au runtime React/TypeScript.
+
+## Mise à jour incrémentale — REACT_INTEGRATION_MIGRATION_001
+- Ajout d’un support explicite des alias legacy de géométrie dans les types React (`torusknot`, `icosahedron`, `knot23`, `knot35`, `trefoil`, `spring`, `mobius`, `klein`, `heart`, `gear`).
+- Extension de la liste de bruits legacy dans les types React (`plasma`, `galaxy`, `marble`, `acid`, `cellular`, `warp`, `truchet`, `mandel`, `wave`, `hex`, `react`).
+- Exposition des nouvelles options legacy dans les sélecteurs React de configuration.
+- Enrichissement de l’export ShaderToy React avec les chunks de bruit legacy manquants afin d’éviter les régressions de conversion.
+- Extension du mapping de géométrie Babylon pour couvrir des formes/alias supplémentaires côté migration.

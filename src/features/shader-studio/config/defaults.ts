@@ -8,8 +8,24 @@ export const GEOMETRY_OPTIONS: { value: GeometryType; label: string }[] = [
   { value: 'cylinder', label: 'Cylinder' },
   { value: 'cone', label: 'Cone' },
   { value: 'torusKnot', label: 'Torus Knot' },
+  { value: 'torusknot', label: 'Torus Knot (legacy alias)' },
+  { value: 'icosphere', label: 'Icosphere' },
+  { value: 'icosahedron', label: 'Icosahedron (legacy alias)' },
+  { value: 'octahedron', label: 'Octahedron' },
+  { value: 'dodecahedron', label: 'Dodecahedron' },
+  { value: 'tetrahedron', label: 'Tetrahedron' },
+  { value: 'capsule', label: 'Capsule' },
   { value: 'disc', label: 'Disc' },
   { value: 'ground', label: 'Ground' },
+  { value: 'hemisphere', label: 'Hemisphere' },
+  { value: 'knot23', label: 'Knot 2x3 (legacy)' },
+  { value: 'knot35', label: 'Knot 3x5 (legacy)' },
+  { value: 'trefoil', label: 'Trefoil (legacy)' },
+  { value: 'spring', label: 'Spring (legacy)' },
+  { value: 'mobius', label: 'Mobius (legacy)' },
+  { value: 'klein', label: 'Klein (legacy)' },
+  { value: 'heart', label: 'Heart (legacy)' },
+  { value: 'gear', label: 'Gear (legacy)' },
 ];
 
 export const NOISE_OPTIONS: { value: NoiseAlgorithm; label: string }[] = [
@@ -28,6 +44,17 @@ export const NOISE_OPTIONS: { value: NoiseAlgorithm; label: string }[] = [
   { value: 'gabor', label: 'Gabor' },
   { value: 'blue', label: 'Blue' },
   { value: 'white', label: 'White' },
+  { value: 'plasma', label: 'Plasma (legacy)' },
+  { value: 'galaxy', label: 'Galaxy Swirl (legacy)' },
+  { value: 'marble', label: 'Marble (legacy)' },
+  { value: 'acid', label: 'Acid Wave (legacy)' },
+  { value: 'cellular', label: 'Cellular (legacy)' },
+  { value: 'warp', label: 'Warped Domain (legacy)' },
+  { value: 'truchet', label: 'Truchet Tiles (legacy)' },
+  { value: 'mandel', label: 'Mandelbrot-ish (legacy)' },
+  { value: 'wave', label: 'Wave Interference (legacy)' },
+  { value: 'hex', label: 'Hexagonal (legacy)' },
+  { value: 'react', label: 'Reaction Diffusion (legacy)' },
 ];
 
 export const PARAM_RANGE: Record<string, { min: number; max: number; step: number }> = {

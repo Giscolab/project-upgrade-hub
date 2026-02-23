@@ -2,12 +2,18 @@ export type GeometryType =
   | 'sphere' | 'box' | 'torus' | 'plane' | 'cylinder' | 'cone'
   | 'torusKnot' | 'icosphere' | 'octahedron' | 'dodecahedron'
   | 'tetrahedron' | 'capsule' | 'disc' | 'ribbon' | 'ground'
-  | 'hemisphere' | 'polyhedron' | 'geodesic';
+  | 'hemisphere' | 'polyhedron' | 'geodesic'
+  // Legacy aliases and extended shapes from shaders.js presets
+  | 'torusknot' | 'icosahedron' | 'knot23' | 'knot35' | 'trefoil'
+  | 'spring' | 'mobius' | 'klein' | 'heart' | 'gear';
 
 export type NoiseAlgorithm =
   | 'perlin' | 'simplex' | 'worley' | 'fbm' | 'voronoi'
   | 'ridged' | 'turbulence' | 'domain_warp' | 'curl'
-  | 'gradient' | 'value' | 'wavelet' | 'gabor' | 'blue' | 'white';
+  | 'gradient' | 'value' | 'wavelet' | 'gabor' | 'blue' | 'white'
+  // Legacy shaders.js noise families
+  | 'plasma' | 'galaxy' | 'marble' | 'acid' | 'cellular'
+  | 'warp' | 'truchet' | 'mandel' | 'wave' | 'hex' | 'react';
 
 export interface ShaderColors {
   color1: string;
