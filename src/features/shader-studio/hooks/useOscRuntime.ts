@@ -50,7 +50,10 @@ export function useOscRuntime(
   onPatchParams: (patch: Partial<ShaderParams>) => void,
 ) {
   const socketRef = useRef<WebSocket | null>(null);
+  const paramsRef = useRef(params);
   const [status, setStatus] = useState('Déconnecté');
+
+  paramsRef.current = params;
 
   useEffect(() => {
     if (!enabled) {
@@ -68,9 +71,7 @@ export function useOscRuntime(
     socket.onopen = () => setStatus('Connecté');
     socket.onerror = () => setStatus('Erreur');
     socket.onclose = () => {
-      if (!closedByCleanup) {
-        setStatus('Déconnecté');
-      }
+      if (!closedByCleanup) setStatus('Déconnecté');
     };
 
     socket.onmessage = (event) => {
@@ -83,10 +84,8 @@ export function useOscRuntime(
         const value = Number(payload.value);
         if (!target || Number.isNaN(value)) return;
 
-        const patch = mapToShaderParam(target, value, params);
-        if (patch) {
-          onPatchParams(patch);
-        }
+        const patch = mapToShaderParam(target, value, paramsRef.current);
+        if (patch) onPatchParams(patch);
       } catch {
         // ignore malformed OSC bridge payload
       }
@@ -97,7 +96,7 @@ export function useOscRuntime(
       socket.close();
       socketRef.current = null;
     };
-  }, [enabled, onPatchParams, params, route, url]);
+  }, [enabled, onPatchParams, route, url]);
 
   return { status };
 }

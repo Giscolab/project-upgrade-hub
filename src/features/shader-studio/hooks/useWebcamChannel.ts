@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function useWebcamChannel(enabled: boolean) {
+  const streamRef = useRef<MediaStream | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [status, setStatus] = useState('Inactif');
 
   useEffect(() => {
     if (!enabled) {
-      stream?.getTracks().forEach((track) => track.stop());
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
       setStream(null);
       setStatus('Inactif');
       return;
@@ -22,6 +24,9 @@ export function useWebcamChannel(enabled: boolean) {
           nextStream.getTracks().forEach((track) => track.stop());
           return;
         }
+
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = nextStream;
         setStream(nextStream);
         setStatus('Webcam active');
       } catch (error) {
@@ -33,7 +38,6 @@ export function useWebcamChannel(enabled: boolean) {
 
     return () => {
       active = false;
-      stream?.getTracks().forEach((track) => track.stop());
     };
   }, [enabled]);
 

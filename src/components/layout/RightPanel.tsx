@@ -36,6 +36,13 @@ interface RightPanelProps {
   onResumeAudio: () => void;
   onStopAudio: () => void;
   onUpdateShaderToyChannel: (index: number, value: string | null) => void;
+  textureLibrary: Array<{ id: string; name: string }>;
+  selectedTextureId: string;
+  onSelectTextureId: (id: string) => void;
+  onApplyTextureFromLibrary: () => void;
+  onUploadTexture: (file: File) => void;
+  onUploadVideoTexture: (file: File) => void;
+  onUploadLayerTexture: (layerIndex: 1 | 2, file: File) => void;
   onExportVideo: () => void;
   onCancelExportVideo: () => void;
   onExportPng: () => void;
@@ -74,6 +81,8 @@ export default function RightPanel(props: RightPanelProps) {
     audioPaused,
     activeAudioSource,
     shaderToyChannels,
+    textureLibrary,
+    selectedTextureId,
     presetNames,
     selectedPresetName,
     canUndo,
@@ -166,6 +175,50 @@ export default function RightPanel(props: RightPanelProps) {
         <input className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={video.resolution} onChange={(e) => props.onVideoChange({ ...video, resolution: e.target.value })} />
         <input className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={video.compression} onChange={(e) => props.onVideoChange({ ...video, compression: e.target.value })} />
         {shaderToyChannels.map((channel, index) => <input key={index} className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" placeholder={`iChannel${index} URL`} value={channel ?? ''} onChange={(e) => props.onUpdateShaderToyChannel(index, e.target.value || null)} />)}
+
+        <div className="grid grid-cols-2 gap-1">
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            📁 Texture
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadTexture(file); e.currentTarget.value = ''; }}
+            />
+          </label>
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            🎬 Vidéo
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadVideoTexture(file); e.currentTarget.value = ''; }}
+            />
+          </label>
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            🧱 Layer1
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadLayerTexture(1, file); e.currentTarget.value = ''; }}
+            />
+          </label>
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            🧱 Layer2
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadLayerTexture(2, file); e.currentTarget.value = ''; }}
+            />
+          </label>
+        </div>
+        <select className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={selectedTextureId} onChange={(e) => props.onSelectTextureId(e.target.value)}>
+          <option value="">Bibliothèque de textures</option>
+          {textureLibrary.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select>
+        <button className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs disabled:opacity-50" onClick={props.onApplyTextureFromLibrary} disabled={!selectedTextureId}>Appliquer texture bibliothèque → iChannel0</button>
         <div className="grid grid-cols-2 gap-1">
           <button className="rounded border border-[#2a2a3a] bg-[#6c63ff] px-2 py-1 text-xs text-white disabled:opacity-50" onClick={props.onExportVideo} disabled={exportInProgress}>{exportInProgress ? 'Export…' : 'Vidéo'}</button>
           <button className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" onClick={props.onExportPng}>PNG</button>

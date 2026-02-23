@@ -24,6 +24,7 @@ interface BabylonCanvasProps {
   fragmentShader?: string;
   shaderToyChannels?: Array<string | null>;
   webcamStream?: MediaStream | null;
+  videoTextureUrl?: string | null;
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
   onEngineReady?: () => void;
   onFirstFrame?: () => void;
@@ -94,6 +95,7 @@ const BabylonCanvas = ({
   fragmentShader,
   shaderToyChannels,
   webcamStream,
+  videoTextureUrl,
   onCanvasReady,
   onEngineReady,
   onFirstFrame,
@@ -236,6 +238,17 @@ const BabylonCanvas = ({
         video.srcObject = webcamStream;
         void video.play().catch(() => undefined);
         return new VideoTexture('webcam-channel', video, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+      }
+
+      if (index === 0 && videoTextureUrl) {
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.src = videoTextureUrl;
+        void video.play().catch(() => undefined);
+        return new VideoTexture('video-channel', video, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
       }
 
       const input = shaderToyChannels?.[index];
@@ -452,6 +465,7 @@ const BabylonCanvas = ({
     onShaderError,
     shaderToyChannels,
   webcamStream,
+  videoTextureUrl,
   ]);
 
   // Initial setup & re-setup on geometry/shader change
