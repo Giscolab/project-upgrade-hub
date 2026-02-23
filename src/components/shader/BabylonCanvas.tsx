@@ -14,6 +14,7 @@ import {
   DefaultRenderingPipeline,
   ChromaticAberrationPostProcess,
   Texture,
+  VideoTexture,
 } from '@babylonjs/core';
 import { ShaderParams, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 
@@ -22,6 +23,8 @@ interface BabylonCanvasProps {
   vertexShader?: string;
   fragmentShader?: string;
   shaderToyChannels?: Array<string | null>;
+  webcamStream?: MediaStream | null;
+  videoTextureUrl?: string | null;
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void;
   onEngineReady?: () => void;
   onFirstFrame?: () => void;
@@ -91,6 +94,8 @@ const BabylonCanvas = ({
   vertexShader,
   fragmentShader,
   shaderToyChannels,
+  webcamStream,
+  videoTextureUrl,
   onCanvasReady,
   onEngineReady,
   onFirstFrame,
@@ -105,6 +110,7 @@ const BabylonCanvas = ({
   const materialRef = useRef<ShaderMaterial | null>(null);
   const timeRef = useRef(0);
   const paramsRef = useRef(params);
+  const mouseRef = useRef(new Vector2(0.5, 0.5));
 
   paramsRef.current = params;
 
@@ -224,6 +230,27 @@ const BabylonCanvas = ({
     meshRef.current = mesh;
 
     const channels: Texture[] = Array.from({ length: SHADERTOY_CHANNEL_COUNT }, (_, index) => {
+      if (index === 0 && webcamStream) {
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.srcObject = webcamStream;
+        void video.play().catch(() => undefined);
+        return new VideoTexture('webcam-channel', video, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+      }
+
+      if (index === 0 && videoTextureUrl) {
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.src = videoTextureUrl;
+        void video.play().catch(() => undefined);
+        return new VideoTexture('video-channel', video, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+      }
+
       const input = shaderToyChannels?.[index];
       if (input) {
         return new Texture(input, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
@@ -325,9 +352,9 @@ const BabylonCanvas = ({
       material.setFloat('uFresnelStrength', p.material.fresnelStrength);
       material.setFloat('iTime', timeRef.current);
       material.setVector2('uResolution', new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
-      material.setVector2('uMouse', new Vector2(0.5, 0.5));
+      material.setVector2('uMouse', mouseRef.current);
       material.setVector3('iResolution', new Vector3(engine.getRenderWidth(), engine.getRenderHeight(), 1));
-      material.setVector3('iMouse', Vector3.Zero());
+      material.setVector3('iMouse', new Vector3(mouseRef.current.x * engine.getRenderWidth(), (1 - mouseRef.current.y) * engine.getRenderHeight(), 0));
       material.setArray4('iChannelTime', [timeRef.current, timeRef.current, timeRef.current, timeRef.current]);
       material.setArray4('iChannelResolution', [
         channels[0].getSize().width,
@@ -412,10 +439,18 @@ const BabylonCanvas = ({
     });
 
     const handleResize = () => engine.resize();
+    const handlePointerMove = (event: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      mouseRef.current.set((event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height);
+    };
+
     window.addEventListener('resize', handleResize);
+    canvas.addEventListener('mousemove', handlePointerMove);
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      canvas.removeEventListener('mousemove', handlePointerMove);
       channels.forEach((channel) => channel.dispose());
       engine.dispose();
     };
@@ -429,6 +464,8 @@ const BabylonCanvas = ({
     onShaderCompiled,
     onShaderError,
     shaderToyChannels,
+  webcamStream,
+  videoTextureUrl,
   ]);
 
   // Initial setup & re-setup on geometry/shader change

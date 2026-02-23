@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import GPULoader from '@/components/shader/GPULoader';
 import AppLayout from '@/components/layout/AppLayout';
 import RightPanel from '@/components/layout/RightPanel';
@@ -9,6 +9,9 @@ import { formatStatus } from './config/defaults';
 import { readPersistedStudioState, useStudioPersistence } from './hooks/useStudioPersistence';
 import { useAudioReactiveRuntime } from './hooks/useAudioReactiveRuntime';
 import { useMidiRuntime } from './hooks/useMidiRuntime';
+import { useOscRuntime } from './hooks/useOscRuntime';
+import { useWebcamChannel } from './hooks/useWebcamChannel';
+import { useTextureLibrary } from './hooks/useTextureLibrary';
 import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from './config/studioDefaults';
 import { exportShadertoyShader } from './services/shadertoyExportService';
 import { exportShaderSource } from './services/shaderExportService';
@@ -65,11 +68,14 @@ export default function ShaderStudioPage() {
   const [presetLibrary, setPresetLibrary] = useState<Record<string, NamedPreset>>(() => readPresetLibrary());
   const [selectedPresetName, setSelectedPresetName] = useState('');
   const [selectedLegacyPreset, setSelectedLegacyPreset] = useState('');
+  const [videoTextureUrl, setVideoTextureUrl] = useState<string | null>(null);
+  const [selectedTextureId, setSelectedTextureId] = useState('');
 
   const { bands, beatPulse, paused, sourceLabel, startMicrophone, startFile, pause, resume, stop } = useAudioReactiveRuntime(
     state.audio.enabled,
     state.audio.beatThreshold,
   );
+  const { textures: textureLibrary, addTexture } = useTextureLibrary();
   const webgpuRef = useRef(new WebGPUComputeService());
   const exportAbortControllerRef = useRef<AbortController | null>(null);
   const readinessRef = useRef({ engineReady: false, firstFrameRendered: false, shaderCompiled: false });
@@ -178,6 +184,23 @@ export default function ShaderStudioPage() {
     setParams((prev) => ({ ...prev, [target]: target === 'frequency' ? 0.1 + normalizedValue * 8 : normalizedValue * 2 }));
   });
 
+  const { status: oscRuntimeStatus } = useOscRuntime(
+    state.osc.enabled,
+    state.osc.url,
+    state.osc.route,
+    state.shader,
+    (patch) => setParams((prev) => ({ ...prev, ...patch, material: patch.material ?? prev.material })),
+  );
+
+  const [webcamEnabled, setWebcamEnabled] = useState(false);
+  const { webcamStream, webcamStatus } = useWebcamChannel(webcamEnabled);
+
+
+  useEffect(() => {
+    if (state.osc.status === oscRuntimeStatus) return;
+    updateState((prev) => ({ ...prev, osc: { ...prev.osc, status: oscRuntimeStatus } }), false);
+  }, [oscRuntimeStatus, state.osc.status, updateState]);
+
   const mappedParams = useMemo(() => {
     if (!state.audio.enabled) return params;
     const next = { ...params };
@@ -194,6 +217,12 @@ export default function ShaderStudioPage() {
   }, [bands.bass, bands.high, bands.mid, params, state.audio]);
 
   useEffect(() => () => exportAbortControllerRef.current?.abort(), []);
+
+
+  useEffect(() => () => {
+    if (videoTextureUrl) URL.revokeObjectURL(videoTextureUrl);
+  }, [videoTextureUrl]);
+
 
   const handleExportVideo = useCallback(async () => {
     if (!canvasEl || exportInProgress) return;
@@ -346,6 +375,34 @@ export default function ShaderStudioPage() {
     return () => cancelAnimationFrame(rafId);
   }, []);
 
+
+  const handleCanvasDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.currentTarget.classList.add('drag-over');
+  }, []);
+
+  const handleCanvasDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.currentTarget.classList.remove('drag-over');
+  }, []);
+
+  const handleCanvasDrop = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+
+    const file = event.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    const reader = new FileReader();
+    reader.onload = () => addTexture(file.name, String(reader.result));
+    reader.readAsDataURL(file);
+
+    updateState((prev) => {
+      const channels = [...prev.shaderToy.channels];
+      channels[0] = url;
+      return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+    });
+  }, [addTexture, updateState]);
+
   const resolution = canvasEl ? `${canvasEl.width} x ${canvasEl.height}` : '—';
   const compileOk = engineReady && firstFrameRendered && shaderCompiled && !shaderError && !runtimeError;
 
@@ -366,7 +423,7 @@ export default function ShaderStudioPage() {
         />
       )}
       canvas={(
-        <div className="relative h-full w-full">
+        <div className="relative h-full w-full" onDragOver={handleCanvasDragOver} onDragLeave={handleCanvasDragLeave} onDrop={handleCanvasDrop}>
           {loading && <GPULoader onLoaded={() => undefined} />}
           <Suspense fallback={null}>
             <BabylonCanvas
@@ -375,6 +432,8 @@ export default function ShaderStudioPage() {
               vertexShader={vertexShader}
               fragmentShader={fragmentShader}
               shaderToyChannels={state.shaderToy.channels}
+              webcamStream={webcamStream}
+              videoTextureUrl={videoTextureUrl}
               onCanvasReady={setCanvasEl}
               onEngineReady={handleEngineReady}
               onFirstFrame={handleFirstFrame}
@@ -412,6 +471,9 @@ export default function ShaderStudioPage() {
           onParamsChange={setParams}
           audio={state.audio}
           video={state.video}
+          osc={state.osc}
+          webcamEnabled={webcamEnabled}
+          webcamStatus={webcamStatus}
           midiStatus={midiStatus}
           webgpuStatus={webgpuStatus}
           exportProgress={exportProgress}
@@ -421,12 +483,16 @@ export default function ShaderStudioPage() {
           audioPaused={paused}
           activeAudioSource={sourceLabel}
           shaderToyChannels={state.shaderToy.channels}
+          textureLibrary={textureLibrary.map((item) => ({ id: item.id, name: item.name }))}
+          selectedTextureId={selectedTextureId}
           presetNames={Object.keys(presetLibrary)}
           selectedPresetName={selectedPresetName}
           canUndo={history.length > 0}
           canRedo={future.length > 0}
           onAudioChange={(audio) => updateState((prev) => ({ ...prev, audio }))}
           onVideoChange={(video) => updateState((prev) => ({ ...prev, video }))}
+          onOscChange={(osc) => updateState((prev) => ({ ...prev, osc }))}
+          onToggleWebcam={() => setWebcamEnabled((prev) => !prev)}
           onStartMicrophone={() => {
             updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'mic', fileName: null } }));
             startMicrophone();
@@ -446,6 +512,52 @@ export default function ShaderStudioPage() {
             channels[index] = value;
             return { ...prev, shaderToy: { ...prev.shaderToy, enabled: channels.some(Boolean), channels } };
           })}
+
+          onSelectTextureId={setSelectedTextureId}
+          onApplyTextureFromLibrary={() => {
+            const item = textureLibrary.find((entry) => entry.id === selectedTextureId);
+            if (!item) return;
+            setVideoTextureUrl(null);
+            updateState((prev) => {
+              const channels = [...prev.shaderToy.channels];
+              channels[0] = item.dataUrl;
+              return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+            });
+          }}
+          onUploadTexture={(file) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const dataUrl = String(reader.result);
+              addTexture(file.name, dataUrl);
+              setVideoTextureUrl(null);
+              updateState((prev) => {
+                const channels = [...prev.shaderToy.channels];
+                channels[0] = dataUrl;
+                return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+              });
+            };
+            reader.readAsDataURL(file);
+          }}
+          onUploadVideoTexture={(file) => {
+            const url = URL.createObjectURL(file);
+            setVideoTextureUrl((previous) => {
+              if (previous) URL.revokeObjectURL(previous);
+              return url;
+            });
+            updateState((prev) => {
+              const channels = [...prev.shaderToy.channels];
+              channels[0] = null;
+              return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+            });
+          }}
+          onUploadLayerTexture={(layerIndex, file) => {
+            const url = URL.createObjectURL(file);
+            updateState((prev) => {
+              const channels = [...prev.shaderToy.channels];
+              channels[layerIndex] = url;
+              return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+            });
+          }}
           onExportVideo={handleExportVideo}
           onCancelExportVideo={handleCancelExportVideo}
           onExportPng={handleExportPng}

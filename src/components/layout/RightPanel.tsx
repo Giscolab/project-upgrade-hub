@@ -1,7 +1,7 @@
 import PanelSection from '@/components/ui/PanelSection';
 import SliderControl from '@/components/ui/SliderControl';
 import ColorSwatch from '@/components/ui/ColorSwatch';
-import { AudioReactiveSettings, VideoExportSettings } from '@/features/shader-studio/types';
+import { AudioReactiveSettings, OscSettings, VideoExportSettings } from '@/features/shader-studio/types';
 import { ShaderParams } from '@/types/shader';
 import { GEOMETRY_OPTIONS, NOISE_OPTIONS, PARAM_RANGE } from '@/features/shader-studio/config/defaults';
 
@@ -10,6 +10,9 @@ interface RightPanelProps {
   onParamsChange: (params: ShaderParams) => void;
   audio: AudioReactiveSettings;
   video: VideoExportSettings;
+  osc: OscSettings;
+  webcamEnabled: boolean;
+  webcamStatus: string;
   midiStatus: string;
   webgpuStatus: string;
   exportProgress: number;
@@ -25,12 +28,21 @@ interface RightPanelProps {
   canRedo: boolean;
   onAudioChange: (audio: AudioReactiveSettings) => void;
   onVideoChange: (video: VideoExportSettings) => void;
+  onOscChange: (osc: OscSettings) => void;
+  onToggleWebcam: () => void;
   onStartMicrophone: () => void;
   onSelectAudioFile: (file: File) => void;
   onPauseAudio: () => void;
   onResumeAudio: () => void;
   onStopAudio: () => void;
   onUpdateShaderToyChannel: (index: number, value: string | null) => void;
+  textureLibrary: Array<{ id: string; name: string }>;
+  selectedTextureId: string;
+  onSelectTextureId: (id: string) => void;
+  onApplyTextureFromLibrary: () => void;
+  onUploadTexture: (file: File) => void;
+  onUploadVideoTexture: (file: File) => void;
+  onUploadLayerTexture: (layerIndex: 1 | 2, file: File) => void;
   onExportVideo: () => void;
   onCancelExportVideo: () => void;
   onExportPng: () => void;
@@ -57,6 +69,9 @@ export default function RightPanel(props: RightPanelProps) {
     onParamsChange,
     audio,
     video,
+    osc,
+    webcamEnabled,
+    webcamStatus,
     midiStatus,
     webgpuStatus,
     exportProgress,
@@ -66,6 +81,8 @@ export default function RightPanel(props: RightPanelProps) {
     audioPaused,
     activeAudioSource,
     shaderToyChannels,
+    textureLibrary,
+    selectedTextureId,
     presetNames,
     selectedPresetName,
     canUndo,
@@ -158,6 +175,50 @@ export default function RightPanel(props: RightPanelProps) {
         <input className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={video.resolution} onChange={(e) => props.onVideoChange({ ...video, resolution: e.target.value })} />
         <input className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={video.compression} onChange={(e) => props.onVideoChange({ ...video, compression: e.target.value })} />
         {shaderToyChannels.map((channel, index) => <input key={index} className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" placeholder={`iChannel${index} URL`} value={channel ?? ''} onChange={(e) => props.onUpdateShaderToyChannel(index, e.target.value || null)} />)}
+
+        <div className="grid grid-cols-2 gap-1">
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            📁 Texture
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadTexture(file); e.currentTarget.value = ''; }}
+            />
+          </label>
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            🎬 Vidéo
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadVideoTexture(file); e.currentTarget.value = ''; }}
+            />
+          </label>
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            🧱 Layer1
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadLayerTexture(1, file); e.currentTarget.value = ''; }}
+            />
+          </label>
+          <label className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-center text-xs">
+            🧱 Layer2
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) props.onUploadLayerTexture(2, file); e.currentTarget.value = ''; }}
+            />
+          </label>
+        </div>
+        <select className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={selectedTextureId} onChange={(e) => props.onSelectTextureId(e.target.value)}>
+          <option value="">Bibliothèque de textures</option>
+          {textureLibrary.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select>
+        <button className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs disabled:opacity-50" onClick={props.onApplyTextureFromLibrary} disabled={!selectedTextureId}>Appliquer texture bibliothèque → iChannel0</button>
         <div className="grid grid-cols-2 gap-1">
           <button className="rounded border border-[#2a2a3a] bg-[#6c63ff] px-2 py-1 text-xs text-white disabled:opacity-50" onClick={props.onExportVideo} disabled={exportInProgress}>{exportInProgress ? 'Export…' : 'Vidéo'}</button>
           <button className="rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" onClick={props.onExportPng}>PNG</button>
@@ -182,6 +243,16 @@ export default function RightPanel(props: RightPanelProps) {
         <label className="flex items-center justify-between text-xs text-[#8888aa]"><span>Vignette</span><input type="checkbox" checked={params.postProcessing.vignette} onChange={(e) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, vignette: e.target.checked } })} /></label>
         <SliderControl label="Bloom i." value={params.postProcessing.bloomIntensity} min={0} max={2} step={0.01} onChange={(bloomIntensity) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, bloomIntensity } })} />
         <SliderControl label="RGB i." value={params.postProcessing.rgbShiftAmount} min={0} max={0.02} step={0.0001} onChange={(rgbShiftAmount) => onParamsChange({ ...params, postProcessing: { ...params.postProcessing, rgbShiftAmount } })} />
+      </PanelSection>
+
+
+      <PanelSection title="OSC / Webcam" defaultOpen={false}>
+        <label className="flex items-center justify-between text-xs text-[#8888aa]"><span>OSC enabled</span><input type="checkbox" checked={osc.enabled} onChange={(e) => props.onOscChange({ ...osc, enabled: e.target.checked })} /></label>
+        <input className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={osc.url} onChange={(e) => props.onOscChange({ ...osc, url: e.target.value })} placeholder="ws://localhost:8081" />
+        <input className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" value={osc.route} onChange={(e) => props.onOscChange({ ...osc, route: e.target.value })} placeholder="/shader" />
+        <p className="text-[11px] text-[#8888aa]">OSC: {osc.status}</p>
+        <button className="w-full rounded border border-[#2a2a3a] bg-[#1a1a26] px-2 py-1 text-xs" onClick={props.onToggleWebcam}>{webcamEnabled ? 'Désactiver webcam iChannel0' : 'Activer webcam iChannel0'}</button>
+        <p className="text-[11px] text-[#8888aa]">{webcamStatus}</p>
       </PanelSection>
 
       <PanelSection title="MIDI" defaultOpen={false}>
