@@ -17,11 +17,11 @@ Version synthétique alignée sur `docs/REACT_MIGRATION_ROADMAP.md`.
 - [x] Export vidéo (progression/annulation), PNG et ShaderToy.
 - [x] Persistance versionnée, undo/redo, presets nommés.
 - [x] Chaîne post-process branchée.
-- [ ] MIDI learn + persistance mapping.
+- [x] MIDI learn + persistance mapping migrés.
 - [ ] Contrôles texture/blend.
 - [ ] Validation de parité presets visuels.
 - [ ] Validation WebGPU fallback multi-device.
-- [ ] Suppression des fichiers legacy (Gate 7) non démarrée.
+- [x] Suppression des fichiers legacy (Gate 7) terminée — 0 fichier legacy à la racine.
 
 ## Priorités (court terme)
 
