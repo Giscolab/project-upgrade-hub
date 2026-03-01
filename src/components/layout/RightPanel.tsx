@@ -229,6 +229,22 @@ export default function RightPanel(props: RightPanelProps) {
         <p className="text-[11px] text-[#8888aa]">{exportProgress}% · {exportStatus ?? 'Prêt'}</p>
       </PanelSection>
 
+      <PanelSection title="Texture / Blend" defaultOpen={false}>
+        <SliderControl label="Texture Mix" value={params.textureBlend.textureMix} {...PARAM_RANGE.textureMix} onChange={(textureMix) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, textureMix } })} />
+        <SliderControl label="Layer 1 Blend" value={params.textureBlend.layerBlend1} {...PARAM_RANGE.layerBlend1} onChange={(layerBlend1) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerBlend1 } })} />
+        <SliderControl label="Layer 2 Blend" value={params.textureBlend.layerBlend2} {...PARAM_RANGE.layerBlend2} onChange={(layerBlend2) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerBlend2 } })} />
+        <SliderControl label="Layer 1 Opacity" value={params.textureBlend.layerOpacity1} {...PARAM_RANGE.layerOpacity1} onChange={(layerOpacity1) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerOpacity1 } })} />
+        <SliderControl label="Layer 2 Opacity" value={params.textureBlend.layerOpacity2} {...PARAM_RANGE.layerOpacity2} onChange={(layerOpacity2) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerOpacity2 } })} />
+      </PanelSection>
+
+      <PanelSection title="Color Grading" defaultOpen={false}>
+        <SliderControl label="Light Intensity" value={params.colorGrading.lightIntensity} {...PARAM_RANGE.lightIntensity} onChange={(lightIntensity) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, lightIntensity } })} />
+        <SliderControl label="Contrast" value={params.colorGrading.contrast} {...PARAM_RANGE.contrast} onChange={(contrast) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, contrast } })} />
+        <SliderControl label="Saturation" value={params.colorGrading.saturation} {...PARAM_RANGE.saturation} onChange={(saturation) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, saturation } })} />
+        <SliderControl label="Gamma" value={params.colorGrading.gamma} {...PARAM_RANGE.gamma} onChange={(gamma) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, gamma } })} />
+        <SliderControl label="Glow Radius" value={params.colorGrading.glowRadius} {...PARAM_RANGE.glowRadius} onChange={(glowRadius) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, glowRadius } })} />
+      </PanelSection>
+
       <PanelSection title="Animation / Matière" defaultOpen={false}>
         <SliderControl label="Metalness" value={params.material.metalness} min={0} max={1} step={0.01} onChange={(metalness) => onParamsChange({ ...params, material: { ...params.material, metalness } })} />
         <SliderControl label="Rim" value={params.material.rimPower} min={0.5} max={8} step={0.1} onChange={(rimPower) => onParamsChange({ ...params, material: { ...params.material, rimPower } })} />
