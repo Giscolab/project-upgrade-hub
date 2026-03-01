@@ -35,6 +35,22 @@ export interface PostProcessing {
   vignetteIntensity: number;
 }
 
+export interface TextureBlendParams {
+  textureMix: number;
+  layerBlend1: number;
+  layerBlend2: number;
+  layerOpacity1: number;
+  layerOpacity2: number;
+}
+
+export interface ColorGradingParams {
+  lightIntensity: number;
+  contrast: number;
+  saturation: number;
+  gamma: number;
+  glowRadius: number;
+}
+
 export interface MaterialParams {
   metalness: number;
   rimPower: number;
@@ -54,6 +70,8 @@ export interface ShaderParams {
   colors: ShaderColors;
   postProcessing: PostProcessing;
   material: MaterialParams;
+  textureBlend: TextureBlendParams;
+  colorGrading: ColorGradingParams;
   wireframe: boolean;
   autoRotate: boolean;
   rotationSpeed: number;
@@ -91,6 +109,20 @@ export const DEFAULT_SHADER_PARAMS: ShaderParams = {
     twist: 0,
     pulse: 2,
     morphFactor: 0,
+  },
+  textureBlend: {
+    textureMix: 0,
+    layerBlend1: 0,
+    layerBlend2: 0,
+    layerOpacity1: 0,
+    layerOpacity2: 0,
+  },
+  colorGrading: {
+    lightIntensity: 1,
+    contrast: 1,
+    saturation: 1,
+    gamma: 1,
+    glowRadius: 0.75,
   },
   wireframe: false,
   autoRotate: true,
