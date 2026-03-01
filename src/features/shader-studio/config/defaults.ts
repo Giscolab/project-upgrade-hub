@@ -63,6 +63,16 @@ export const PARAM_RANGE: Record<string, { min: number; max: number; step: numbe
   frequency: { min: 0.1, max: 12, step: 0.1 },
   scale: { min: 0.2, max: 4, step: 0.01 },
   rotationSpeed: { min: 0, max: 4, step: 0.01 },
+  textureMix: { min: 0, max: 1, step: 0.01 },
+  layerBlend1: { min: 0, max: 1, step: 0.01 },
+  layerBlend2: { min: 0, max: 1, step: 0.01 },
+  layerOpacity1: { min: 0, max: 1, step: 0.01 },
+  layerOpacity2: { min: 0, max: 1, step: 0.01 },
+  lightIntensity: { min: 0, max: 3, step: 0.01 },
+  contrast: { min: 0.5, max: 2, step: 0.01 },
+  saturation: { min: 0, max: 2, step: 0.01 },
+  gamma: { min: 0.5, max: 3, step: 0.01 },
+  glowRadius: { min: 0, max: 2, step: 0.01 },
 };
 
 export function formatStatus(params: ShaderParams) {

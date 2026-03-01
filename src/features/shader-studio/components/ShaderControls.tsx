@@ -208,6 +208,34 @@ export default function ShaderControls({ params, onParamsChange }: ShaderControl
       </div>
 
       <div className="space-y-2 rounded-md border border-border/50 p-2">
+        <Label className="text-xs">Texture / Blend</Label>
+        <ParamSlider id="textureMix" label="Texture Mix" value={params.textureBlend.textureMix} {...PARAM_RANGE.textureMix}
+          onChange={(textureMix) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, textureMix } })} />
+        <ParamSlider id="layerBlend1" label="Layer 1 Blend" value={params.textureBlend.layerBlend1} {...PARAM_RANGE.layerBlend1}
+          onChange={(layerBlend1) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerBlend1 } })} />
+        <ParamSlider id="layerBlend2" label="Layer 2 Blend" value={params.textureBlend.layerBlend2} {...PARAM_RANGE.layerBlend2}
+          onChange={(layerBlend2) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerBlend2 } })} />
+        <ParamSlider id="layerOpacity1" label="Layer 1 Opacity" value={params.textureBlend.layerOpacity1} {...PARAM_RANGE.layerOpacity1}
+          onChange={(layerOpacity1) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerOpacity1 } })} />
+        <ParamSlider id="layerOpacity2" label="Layer 2 Opacity" value={params.textureBlend.layerOpacity2} {...PARAM_RANGE.layerOpacity2}
+          onChange={(layerOpacity2) => onParamsChange({ ...params, textureBlend: { ...params.textureBlend, layerOpacity2 } })} />
+      </div>
+
+      <div className="space-y-2 rounded-md border border-border/50 p-2">
+        <Label className="text-xs">Color Grading</Label>
+        <ParamSlider id="lightIntensity" label="Light Intensity" value={params.colorGrading.lightIntensity} {...PARAM_RANGE.lightIntensity}
+          onChange={(lightIntensity) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, lightIntensity } })} />
+        <ParamSlider id="contrast" label="Contrast" value={params.colorGrading.contrast} {...PARAM_RANGE.contrast}
+          onChange={(contrast) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, contrast } })} />
+        <ParamSlider id="saturation" label="Saturation" value={params.colorGrading.saturation} {...PARAM_RANGE.saturation}
+          onChange={(saturation) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, saturation } })} />
+        <ParamSlider id="gamma" label="Gamma" value={params.colorGrading.gamma} {...PARAM_RANGE.gamma}
+          onChange={(gamma) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, gamma } })} />
+        <ParamSlider id="glowRadius" label="Glow Radius" value={params.colorGrading.glowRadius} {...PARAM_RANGE.glowRadius}
+          onChange={(glowRadius) => onParamsChange({ ...params, colorGrading: { ...params.colorGrading, glowRadius } })} />
+      </div>
+
+      <div className="space-y-2 rounded-md border border-border/50 p-2">
         <Label className="text-xs">Colors</Label>
         <div className="grid grid-cols-2 gap-2">
           {(
