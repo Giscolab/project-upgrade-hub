@@ -4,6 +4,7 @@ import ColorSwatch from '@/components/ui/ColorSwatch';
 import { AudioReactiveSettings, OscSettings, VideoExportSettings } from '@/features/shader-studio/types';
 import { ShaderParams } from '@/types/shader';
 import { GEOMETRY_OPTIONS, NOISE_OPTIONS, PARAM_RANGE } from '@/features/shader-studio/config/defaults';
+import { validateOscWebSocketUrl } from '@/features/shader-studio/utils/oscUrlValidation';
 
 interface RightPanelProps {
   params: ShaderParams;
@@ -92,6 +93,10 @@ export default function RightPanel(props: RightPanelProps) {
     legacyPresetNames,
     selectedLegacyPreset,
   } = props;
+
+  const oscUrlValidation = validateOscWebSocketUrl(osc.url);
+  const oscUrlError = oscUrlValidation.isValid ? null : oscUrlValidation.error;
+  const canToggleOsc = osc.enabled || oscUrlValidation.isValid;
 
   return (
     <aside className="w-[280px] shrink-0 space-y-2 overflow-y-auto border-l border-[#2a2a3a] bg-[#111118] p-2 shader-scrollbar">
@@ -252,9 +257,10 @@ export default function RightPanel(props: RightPanelProps) {
       </PanelSection>
 
       <PanelSection title="OSC / Webcam" defaultOpen={false}>
-        <label className="flex items-center justify-between text-xs text-[#b8b8d6]"><span>OSC enabled</span><input type="checkbox" checked={osc.enabled} onChange={(e) => props.onOscChange({ ...osc, enabled: e.target.checked })} /></label>
+        <label className="flex items-center justify-between text-xs text-[#b8b8d6]"><span>OSC enabled</span><input type="checkbox" checked={osc.enabled} disabled={!canToggleOsc} onChange={(e) => props.onOscChange({ ...osc, enabled: e.target.checked })} /></label>
         <label htmlFor="osc-url" className="sr-only">URL OSC websocket</label>
         <input id="osc-url" aria-label="URL OSC websocket" className={inputClassName} value={osc.url} onChange={(e) => props.onOscChange({ ...osc, url: e.target.value })} placeholder="ws://localhost:8081" />
+        {oscUrlError && <p className="text-[11px] text-[#ff8f8f]">{oscUrlError}</p>}
         <label htmlFor="osc-route" className="sr-only">Route OSC</label>
         <input id="osc-route" aria-label="Route OSC" className={inputClassName} value={osc.route} onChange={(e) => props.onOscChange({ ...osc, route: e.target.value })} placeholder="/shader" />
         <p className={mutedTextClassName}>OSC: {osc.status}</p>

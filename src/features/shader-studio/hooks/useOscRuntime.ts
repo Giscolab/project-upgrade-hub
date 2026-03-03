@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ShaderParams } from '@/types/shader';
+import { validateOscWebSocketUrl } from '@/features/shader-studio/utils/oscUrlValidation';
 
 interface OscMessage {
   route?: string;
@@ -63,8 +64,16 @@ export function useOscRuntime(
       return;
     }
 
+    const validation = validateOscWebSocketUrl(url);
+    if (!validation.isValid || !validation.normalizedUrl) {
+      socketRef.current?.close();
+      socketRef.current = null;
+      setStatus(validation.error ?? 'URL OSC invalide');
+      return;
+    }
+
     let closedByCleanup = false;
-    const socket = new WebSocket(url);
+    const socket = new WebSocket(validation.normalizedUrl);
     socketRef.current = socket;
     setStatus('Connexion…');
 
