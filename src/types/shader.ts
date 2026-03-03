@@ -19,7 +19,9 @@ export interface ShaderColors {
   color1: string;
   color2: string;
   color3: string;
+  color4: string;
   background: string;
+  rimColor: string;
 }
 
 export interface PostProcessing {
@@ -88,7 +90,9 @@ export const DEFAULT_SHADER_PARAMS: ShaderParams = {
     color1: '#8b5cf6',
     color2: '#06b6d4',
     color3: '#f43f5e',
+    color4: '#ff6688',
     background: '#0a0a0f',
+    rimColor: '#06b6d4',
   },
   postProcessing: {
     bloom: true,

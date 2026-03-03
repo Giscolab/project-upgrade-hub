@@ -14,7 +14,9 @@ describe('buildShadertoyShaderFromParams', () => {
         color1: '#ff0000',
         color2: '#00ff00',
         color3: '#0000ff',
+        color4: '#ff6688',
         background: '#000000',
+        rimColor: '#06b6d4',
       },
     });
 

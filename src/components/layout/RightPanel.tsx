@@ -140,6 +140,8 @@ export default function RightPanel(props: RightPanelProps) {
           <ColorSwatch label="A" value={params.colors.color1} onChange={(value) => onParamsChange({ ...params, colors: { ...params.colors, color1: value } })} />
           <ColorSwatch label="B" value={params.colors.color2} onChange={(value) => onParamsChange({ ...params, colors: { ...params.colors, color2: value } })} />
           <ColorSwatch label="C" value={params.colors.color3} onChange={(value) => onParamsChange({ ...params, colors: { ...params.colors, color3: value } })} />
+          <ColorSwatch label="D" value={params.colors.color4} onChange={(value) => onParamsChange({ ...params, colors: { ...params.colors, color4: value } })} />
+          <ColorSwatch label="Rim" value={params.colors.rimColor} onChange={(value) => onParamsChange({ ...params, colors: { ...params.colors, rimColor: value } })} />
           <ColorSwatch label="Fond" value={params.colors.background} onChange={(value) => onParamsChange({ ...params, colors: { ...params.colors, background: value } })} />
         </div>
       </PanelSection>

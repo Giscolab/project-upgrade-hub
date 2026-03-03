@@ -19,7 +19,7 @@ import { downloadBlob, exportCanvasPng, recordCanvasVideo } from './services/vid
 import { WebGPUComputeService } from './services/webgpuComputeService';
 import { DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 import { StudioState } from './types';
-import { LEGACY_PRESETS, applyLegacyPresetToShaderParams, buildLegacyShaderPair } from './config/legacyShaderStudioV5';
+import { LEGACY_PRESETS, LEGACY_SHADER_CHUNKS, applyLegacyPresetToShaderParams, buildLegacyShaderPair, type LegacyNoise } from './config/legacyShaderStudioV5';
 
 interface NamedPreset {
   version: number;
@@ -215,6 +215,17 @@ export default function ShaderStudioPage() {
     applyMap(state.audio.mapHighTo, bands.high * state.audio.gainHigh);
     return next;
   }, [bands.bass, bands.high, bands.mid, params, state.audio]);
+
+  // Rebuild GLSL when noise type changes via dropdown
+  useEffect(() => {
+    const noiseType = params.noise as LegacyNoise;
+    if (LEGACY_SHADER_CHUNKS[noiseType]) {
+      const { vertex, fragment } = buildLegacyShaderPair(noiseType);
+      setVertexShader(vertex);
+      setFragmentShader(fragment);
+      setCompileKey((k) => k + 1);
+    }
+  }, [params.noise]);
 
   useEffect(() => () => exportAbortControllerRef.current?.abort(), []);
 

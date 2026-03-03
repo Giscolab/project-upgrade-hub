@@ -373,7 +373,8 @@ const BabylonCanvas = ({
       const c1 = hexToVec3(p.colors.color1);
       const c2 = hexToVec3(p.colors.color2);
       const c3 = hexToVec3(p.colors.color3);
-      const c4 = [(c1[0] + c2[0] + c3[0]) / 3, (c1[1] + c2[1] + c3[1]) / 3, (c1[2] + c2[2] + c3[2]) / 3] as const;
+      const c4 = hexToVec3(p.colors.color4);
+      const cRim = hexToVec3(p.colors.rimColor);
       material.setVector3('uColor1', new Vector3(c1[0], c1[1], c1[2]));
       material.setVector3('uColor2', new Vector3(c2[0], c2[1], c2[2]));
       material.setVector3('uColor3', new Vector3(c3[0], c3[1], c3[2]));
@@ -381,7 +382,7 @@ const BabylonCanvas = ({
       material.setVector3('uColorB', new Vector3(c2[0], c2[1], c2[2]));
       material.setVector3('uColorC', new Vector3(c3[0], c3[1], c3[2]));
       material.setVector3('uColorD', new Vector3(c4[0], c4[1], c4[2]));
-      material.setVector3('uRimColor', new Vector3(c3[0], c3[1], c3[2]));
+      material.setVector3('uRimColor', new Vector3(cRim[0], cRim[1], cRim[2]));
 
       if (mesh) {
         mesh.scaling.setAll(p.scale);
