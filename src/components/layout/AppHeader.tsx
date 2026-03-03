@@ -14,7 +14,7 @@ export default function AppHeader({ shaderName, compileOk, onToggleMigration }: 
         <p className="text-[13px] font-medium text-[#e8e8f0]">GLSL &amp; Shadertoy Studio</p>
       </div>
 
-      <div className="flex items-center gap-2 text-[11px] text-[#8888aa]">
+      <div className="flex items-center gap-2 text-[11px] text-[#b8b8d6]">
         <span>Shader: {shaderName}</span>
         <span className="text-[#555570]">|</span>
         <span className={`inline-flex items-center gap-1 ${compileOk ? 'text-[#22c55e]' : 'text-[#ef4444]'}`}>
@@ -24,14 +24,15 @@ export default function AppHeader({ shaderName, compileOk, onToggleMigration }: 
       </div>
 
       <div className="flex items-center gap-1">
-        <button className="h-7 w-7 rounded border border-transparent text-[#8888aa] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]" title="Plein écran">
+        <button aria-label="Plein écran" className="h-7 w-7 rounded border border-transparent text-[#b8b8d6] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]" title="Plein écran">
           <Maximize2 className="mx-auto h-3.5 w-3.5" />
         </button>
-        <button className="h-7 w-7 rounded border border-transparent text-[#8888aa] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]" title="Réglages">
+        <button aria-label="Réglages" className="h-7 w-7 rounded border border-transparent text-[#b8b8d6] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]" title="Réglages">
           <Settings2 className="mx-auto h-3.5 w-3.5" />
         </button>
         <button
-          className="h-7 w-7 rounded border border-transparent text-[#8888aa] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]"
+          aria-label="Checklist migration"
+          className="h-7 w-7 rounded border border-transparent text-[#b8b8d6] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]"
           title="Checklist migration"
           onClick={onToggleMigration}
         >
