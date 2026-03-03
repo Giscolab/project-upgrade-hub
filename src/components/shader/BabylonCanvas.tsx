@@ -408,18 +408,10 @@ const BabylonCanvas = ({
       postPipeline.bloomWeight = p.postProcessing.bloomIntensity;
 
         const effect = material.getEffect();
-        const shaderError = effect?.getCompilationError() || null;
-        onShaderError?.(shaderError);
 
-        if (shaderError && !hasReportedCriticalError) {
-          hasReportedCriticalError = true;
-          onRuntimeError?.(`Shader compile error: ${shaderError}`);
-          engine.stopRenderLoop();
-          return;
-        }
-
-        if (!shaderError && !hasReportedShaderCompiled && effect?.isReady()) {
+        if (!hasReportedShaderCompiled && effect?.isReady()) {
           hasReportedShaderCompiled = true;
+          onShaderError?.(null);
           onShaderCompiled?.();
         }
 
