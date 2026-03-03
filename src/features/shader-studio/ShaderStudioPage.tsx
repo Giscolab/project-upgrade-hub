@@ -1,9 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import GPULoader from '@/components/shader/GPULoader';
 import AppLayout from '@/components/layout/AppLayout';
-import RightPanel from '@/components/layout/RightPanel';
-import GlslEditorPanel from './components/GlslEditorPanel';
-import MigrationChecklistPanel from './components/MigrationChecklistPanel';
 import CanvasOverlay from './components/CanvasOverlay';
 import { formatStatus } from './config/defaults';
 import { readPersistedStudioState, useStudioPersistence } from './hooks/useStudioPersistence';
@@ -30,6 +27,9 @@ interface NamedPreset {
 const PRESET_STORAGE_KEY = 'shader-studio-react-presets-v3';
 
 const BabylonCanvas = lazy(() => import('@/components/shader/BabylonCanvas'));
+const RightPanel = lazy(() => import('@/components/layout/RightPanel'));
+const GlslEditorPanel = lazy(() => import('./components/GlslEditorPanel'));
+const MigrationChecklistPanel = lazy(() => import('./components/MigrationChecklistPanel'));
 
 function readPresetLibrary(): Record<string, NamedPreset> {
   try {
@@ -83,6 +83,7 @@ export default function ShaderStudioPage() {
   const [exportStatus, setExportStatus] = useState<string | null>(null);
   const [exportInProgress, setExportInProgress] = useState(false);
   const [migrationPanelOpen, setMigrationPanelOpen] = useState(false);
+  const [panelsMounted, setPanelsMounted] = useState(false);
   const [fps, setFps] = useState(0);
 
   const updateState = useCallback((updater: StudioState | ((prev: StudioState) => StudioState), pushHistory = true) => {
@@ -228,6 +229,18 @@ export default function ShaderStudioPage() {
   }, [params.noise]);
 
   useEffect(() => () => exportAbortControllerRef.current?.abort(), []);
+
+  useEffect(() => {
+    const idleCallback = window.requestIdleCallback?.(() => setPanelsMounted(true), { timeout: 1500 });
+    const timeoutId = window.setTimeout(() => setPanelsMounted(true), 800);
+
+    return () => {
+      if (typeof idleCallback === 'number' && window.cancelIdleCallback) {
+        window.cancelIdleCallback(idleCallback);
+      }
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
 
   useEffect(() => () => {
@@ -424,14 +437,20 @@ export default function ShaderStudioPage() {
       statusText={formatStatus(params)}
       onToggleMigration={() => setMigrationPanelOpen((prev) => !prev)}
       leftPanel={(
-        <GlslEditorPanel
-          vertexShader={vertexShader}
-          fragmentShader={fragmentShader}
-          onVertexChange={setVertexShader}
-          onFragmentChange={setFragmentShader}
-          onCompile={handleCompile}
-          onExportCode={handleExportCode}
-        />
+        <Suspense fallback={<div className="h-full animate-pulse bg-[#111118]" />}>
+          {panelsMounted ? (
+            <GlslEditorPanel
+              vertexShader={vertexShader}
+              fragmentShader={fragmentShader}
+              onVertexChange={setVertexShader}
+              onFragmentChange={setFragmentShader}
+              onCompile={handleCompile}
+              onExportCode={handleExportCode}
+            />
+          ) : (
+            <div className="h-full bg-[#111118]" />
+          )}
+        </Suspense>
       )}
       canvas={(
         <div className="relative h-full w-full" onDragOver={handleCanvasDragOver} onDragLeave={handleCanvasDragLeave} onDrop={handleCanvasDrop}>
@@ -473,119 +492,129 @@ export default function ShaderStudioPage() {
             resolution={resolution}
             onFullscreen={() => canvasEl?.requestFullscreen?.()}
           />
-          <MigrationChecklistPanel open={migrationPanelOpen} onClose={() => setMigrationPanelOpen(false)} />
+          {migrationPanelOpen && (
+            <Suspense fallback={null}>
+              <MigrationChecklistPanel open={migrationPanelOpen} onClose={() => setMigrationPanelOpen(false)} />
+            </Suspense>
+          )}
         </div>
       )}
       rightPanel={(
-        <RightPanel
-          params={params}
-          onParamsChange={setParams}
-          audio={state.audio}
-          video={state.video}
-          osc={state.osc}
-          webcamEnabled={webcamEnabled}
-          webcamStatus={webcamStatus}
-          midiStatus={midiStatus}
-          webgpuStatus={webgpuStatus}
-          exportProgress={exportProgress}
-          exportStatus={exportStatus}
-          exportInProgress={exportInProgress}
-          beatPulse={beatPulse}
-          audioPaused={paused}
-          activeAudioSource={sourceLabel}
-          shaderToyChannels={state.shaderToy.channels}
-          textureLibrary={textureLibrary.map((item) => ({ id: item.id, name: item.name }))}
-          selectedTextureId={selectedTextureId}
-          presetNames={Object.keys(presetLibrary)}
-          selectedPresetName={selectedPresetName}
-          canUndo={history.length > 0}
-          canRedo={future.length > 0}
-          onAudioChange={(audio) => updateState((prev) => ({ ...prev, audio }))}
-          onVideoChange={(video) => updateState((prev) => ({ ...prev, video }))}
-          onOscChange={(osc) => updateState((prev) => ({ ...prev, osc }))}
-          onToggleWebcam={() => setWebcamEnabled((prev) => !prev)}
-          onStartMicrophone={() => {
-            updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'mic', fileName: null } }));
-            startMicrophone();
-          }}
-          onSelectAudioFile={(file) => {
-            updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'file', fileName: file.name } }));
-            startFile(file);
-          }}
-          onPauseAudio={pause}
-          onResumeAudio={resume}
-          onStopAudio={() => {
-            updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: false } }));
-            stop();
-          }}
-          onUpdateShaderToyChannel={(index, value) => updateState((prev) => {
-            const channels = [...prev.shaderToy.channels];
-            channels[index] = value;
-            return { ...prev, shaderToy: { ...prev.shaderToy, enabled: channels.some(Boolean), channels } };
-          })}
-
-          onSelectTextureId={setSelectedTextureId}
-          onApplyTextureFromLibrary={() => {
-            const item = textureLibrary.find((entry) => entry.id === selectedTextureId);
-            if (!item) return;
-            setVideoTextureUrl(null);
-            updateState((prev) => {
-              const channels = [...prev.shaderToy.channels];
-              channels[0] = item.dataUrl;
-              return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
-            });
-          }}
-          onUploadTexture={(file) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              const dataUrl = String(reader.result);
-              addTexture(file.name, dataUrl);
-              setVideoTextureUrl(null);
-              updateState((prev) => {
+        <Suspense fallback={<aside className="w-[280px] shrink-0 border-l border-[#2a2a3a] bg-[#111118]" />}>
+          {panelsMounted ? (
+            <RightPanel
+              params={params}
+              onParamsChange={setParams}
+              audio={state.audio}
+              video={state.video}
+              osc={state.osc}
+              webcamEnabled={webcamEnabled}
+              webcamStatus={webcamStatus}
+              midiStatus={midiStatus}
+              webgpuStatus={webgpuStatus}
+              exportProgress={exportProgress}
+              exportStatus={exportStatus}
+              exportInProgress={exportInProgress}
+              beatPulse={beatPulse}
+              audioPaused={paused}
+              activeAudioSource={sourceLabel}
+              shaderToyChannels={state.shaderToy.channels}
+              textureLibrary={textureLibrary.map((item) => ({ id: item.id, name: item.name }))}
+              selectedTextureId={selectedTextureId}
+              presetNames={Object.keys(presetLibrary)}
+              selectedPresetName={selectedPresetName}
+              canUndo={history.length > 0}
+              canRedo={future.length > 0}
+              onAudioChange={(audio) => updateState((prev) => ({ ...prev, audio }))}
+              onVideoChange={(video) => updateState((prev) => ({ ...prev, video }))}
+              onOscChange={(osc) => updateState((prev) => ({ ...prev, osc }))}
+              onToggleWebcam={() => setWebcamEnabled((prev) => !prev)}
+              onStartMicrophone={() => {
+                updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'mic', fileName: null } }));
+                startMicrophone();
+              }}
+              onSelectAudioFile={(file) => {
+                updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: true, source: 'file', fileName: file.name } }));
+                startFile(file);
+              }}
+              onPauseAudio={pause}
+              onResumeAudio={resume}
+              onStopAudio={() => {
+                updateState((prev) => ({ ...prev, audio: { ...prev.audio, enabled: false } }));
+                stop();
+              }}
+              onUpdateShaderToyChannel={(index, value) => updateState((prev) => {
                 const channels = [...prev.shaderToy.channels];
-                channels[0] = dataUrl;
-                return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
-              });
-            };
-            reader.readAsDataURL(file);
-          }}
-          onUploadVideoTexture={(file) => {
-            const url = URL.createObjectURL(file);
-            setVideoTextureUrl((previous) => {
-              if (previous) URL.revokeObjectURL(previous);
-              return url;
-            });
-            updateState((prev) => {
-              const channels = [...prev.shaderToy.channels];
-              channels[0] = null;
-              return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
-            });
-          }}
-          onUploadLayerTexture={(layerIndex, file) => {
-            const url = URL.createObjectURL(file);
-            updateState((prev) => {
-              const channels = [...prev.shaderToy.channels];
-              channels[layerIndex] = url;
-              return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
-            });
-          }}
-          onExportVideo={handleExportVideo}
-          onCancelExportVideo={handleCancelExportVideo}
-          onExportPng={handleExportPng}
-          onExportShadertoy={handleExportShadertoy}
-          onRunWebGPU={handleRunWebGPU}
-          onToggleMidi={() => updateState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}
-          onPresetNameChange={setSelectedPresetName}
-          onSavePreset={handleSavePreset}
-          onLoadPreset={handleLoadPreset}
-          onDeletePreset={handleDeletePreset}
-          onUndo={handleUndo}
-          onRedo={handleRedo}
-          legacyPresetNames={Object.keys(LEGACY_PRESETS)}
-          selectedLegacyPreset={selectedLegacyPreset}
-          onSelectLegacyPreset={setSelectedLegacyPreset}
-          onApplyLegacyPreset={handleApplyLegacyPreset}
-        />
+                channels[index] = value;
+                return { ...prev, shaderToy: { ...prev.shaderToy, enabled: channels.some(Boolean), channels } };
+              })}
+
+              onSelectTextureId={setSelectedTextureId}
+              onApplyTextureFromLibrary={() => {
+                const item = textureLibrary.find((entry) => entry.id === selectedTextureId);
+                if (!item) return;
+                setVideoTextureUrl(null);
+                updateState((prev) => {
+                  const channels = [...prev.shaderToy.channels];
+                  channels[0] = item.dataUrl;
+                  return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+                });
+              }}
+              onUploadTexture={(file) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const dataUrl = String(reader.result);
+                  addTexture(file.name, dataUrl);
+                  setVideoTextureUrl(null);
+                  updateState((prev) => {
+                    const channels = [...prev.shaderToy.channels];
+                    channels[0] = dataUrl;
+                    return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+                  });
+                };
+                reader.readAsDataURL(file);
+              }}
+              onUploadVideoTexture={(file) => {
+                const url = URL.createObjectURL(file);
+                setVideoTextureUrl((previous) => {
+                  if (previous) URL.revokeObjectURL(previous);
+                  return url;
+                });
+                updateState((prev) => {
+                  const channels = [...prev.shaderToy.channels];
+                  channels[0] = null;
+                  return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+                });
+              }}
+              onUploadLayerTexture={(layerIndex, file) => {
+                const url = URL.createObjectURL(file);
+                updateState((prev) => {
+                  const channels = [...prev.shaderToy.channels];
+                  channels[layerIndex] = url;
+                  return { ...prev, shaderToy: { ...prev.shaderToy, enabled: true, channels } };
+                });
+              }}
+              onExportVideo={handleExportVideo}
+              onCancelExportVideo={handleCancelExportVideo}
+              onExportPng={handleExportPng}
+              onExportShadertoy={handleExportShadertoy}
+              onRunWebGPU={handleRunWebGPU}
+              onToggleMidi={() => updateState((prev) => ({ ...prev, midi: { ...prev.midi, enabled: !prev.midi.enabled } }))}
+              onPresetNameChange={setSelectedPresetName}
+              onSavePreset={handleSavePreset}
+              onLoadPreset={handleLoadPreset}
+              onDeletePreset={handleDeletePreset}
+              onUndo={handleUndo}
+              onRedo={handleRedo}
+              legacyPresetNames={Object.keys(LEGACY_PRESETS)}
+              selectedLegacyPreset={selectedLegacyPreset}
+              onSelectLegacyPreset={setSelectedLegacyPreset}
+              onApplyLegacyPreset={handleApplyLegacyPreset}
+            />
+          ) : (
+            <aside className="w-[280px] shrink-0 border-l border-[#2a2a3a] bg-[#111118]" />
+          )}
+        </Suspense>
       )}
     />
   );
