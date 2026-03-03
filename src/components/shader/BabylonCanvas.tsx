@@ -16,7 +16,7 @@ import {
   Texture,
   VideoTexture,
 } from '@babylonjs/core';
-import { ShaderParams, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
+import { ShaderParams, DEFAULT_SHADER_PARAMS, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 
 interface BabylonCanvasProps {
   params: ShaderParams;
@@ -51,10 +51,11 @@ void main() {
 `;
 }
 
-function hexToVec3(hex: string): [number, number, number] {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
+function hexToVec3(hex: string | undefined, fallback = '#000000'): [number, number, number] {
+  const safeHex = /^#[0-9a-fA-F]{6}$/.test(hex ?? '') ? hex! : fallback;
+  const r = parseInt(safeHex.slice(1, 3), 16) / 255;
+  const g = parseInt(safeHex.slice(3, 5), 16) / 255;
+  const b = parseInt(safeHex.slice(5, 7), 16) / 255;
   return [r, g, b];
 }
 
@@ -146,7 +147,7 @@ const BabylonCanvas = ({
     const scene = new Scene(engine);
     sceneRef.current = scene;
     
-    const bgColor = hexToVec3(paramsRef.current.colors.background);
+    const bgColor = hexToVec3(paramsRef.current.colors?.background, DEFAULT_SHADER_PARAMS.colors.background);
     scene.clearColor = new Color4(bgColor[0], bgColor[1], bgColor[2], 1);
 
     // Camera
@@ -370,11 +371,11 @@ const BabylonCanvas = ({
       material.setTexture('uLayer2', channels[2]);
       material.setTexture('uMatcap', channels[3]);
 
-      const c1 = hexToVec3(p.colors.color1);
-      const c2 = hexToVec3(p.colors.color2);
-      const c3 = hexToVec3(p.colors.color3);
-      const c4 = hexToVec3(p.colors.color4);
-      const cRim = hexToVec3(p.colors.rimColor);
+      const c1 = hexToVec3(p.colors?.color1, DEFAULT_SHADER_PARAMS.colors.color1);
+      const c2 = hexToVec3(p.colors?.color2, DEFAULT_SHADER_PARAMS.colors.color2);
+      const c3 = hexToVec3(p.colors?.color3, DEFAULT_SHADER_PARAMS.colors.color3);
+      const c4 = hexToVec3(p.colors?.color4, DEFAULT_SHADER_PARAMS.colors.color4);
+      const cRim = hexToVec3(p.colors?.rimColor, DEFAULT_SHADER_PARAMS.colors.rimColor);
       material.setVector3('uColor1', new Vector3(c1[0], c1[1], c1[2]));
       material.setVector3('uColor2', new Vector3(c2[0], c2[1], c2[2]));
       material.setVector3('uColor3', new Vector3(c3[0], c3[1], c3[2]));
@@ -478,7 +479,7 @@ const BabylonCanvas = ({
   // Update background color
   useEffect(() => {
     if (sceneRef.current) {
-      const bg = hexToVec3(params.colors.background);
+      const bg = hexToVec3(params.colors?.background, DEFAULT_SHADER_PARAMS.colors.background);
       sceneRef.current.clearColor = new Color4(bg[0], bg[1], bg[2], 1);
     }
   }, [params.colors.background]);
