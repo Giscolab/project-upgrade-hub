@@ -246,6 +246,8 @@ export function applyLegacyPresetToShaderParams(current: ShaderParams, preset: L
       color1: rgbToHex(preset.uColorA),
       color2: rgbToHex(preset.uColorB),
       color3: rgbToHex(preset.uColorC),
+      color4: rgbToHex(preset.uColorD),
+      rimColor: rgbToHex(preset.uRimColor),
     },
     material: {
       ...current.material,
@@ -255,6 +257,14 @@ export function applyLegacyPresetToShaderParams(current: ShaderParams, preset: L
       twist: preset.uTwist,
       pulse: preset.uPulse,
       morphFactor: preset.uMorphFactor,
+    },
+    colorGrading: {
+      ...current.colorGrading,
+      lightIntensity: preset.uLightIntensity,
+      contrast: preset.uContrast,
+      saturation: preset.uSaturation,
+      gamma: preset.uGamma,
+      glowRadius: preset.uGlowRadius,
     },
     postProcessing: {
       ...current.postProcessing,
