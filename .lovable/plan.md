@@ -1,82 +1,104 @@
 
 
-# Implement Texture/Blend Controls in ShaderControls
+# Couplage complet Geometry + Noise + Legacy Presets
 
-## Context
+## Probleme identifie
 
-The BabylonCanvas renderer already declares and sets uniforms for texture mixing, layer blending, and color grading -- but they are all hardcoded to static values (e.g. `uTextureMix = 0.0`, `uContrast = 1.0`). These need to be exposed as user-controllable parameters.
+Trois causes racines expliquent pourquoi les selections ne s'appliquent pas :
 
-## Changes
+1. **Le dropdown Noise ne reconstruit pas les shaders GLSL** : quand on change le type de bruit (ex: cellular), seul `params.noise` est mis a jour dans le state React. Le code GLSL (`vertexShader`/`fragmentShader`) reste inchange. La fonction `buildLegacyShaderPair(noiseType)` n'est appelee que lors de l'application d'un preset legacy, jamais lors d'un changement de dropdown.
 
-### 1. Extend `ShaderParams` type (`src/types/shader.ts`)
+2. **`applyLegacyPresetToShaderParams` est incomplet** : il ne transmet pas `colorGrading` (lightIntensity, contrast, saturation, gamma, glowRadius) ni `uColorD` (4eme couleur) ni `uRimColor` depuis les presets legacy.
 
-Add a new `TextureBlendParams` interface and include it in `ShaderParams`:
+3. **Pas de 4eme couleur dans le modele React** : le preset legacy definit `uColorD` et `uRimColor` mais `ShaderColors` n'a que 3 couleurs. Le canvas calcule `uColorD` comme moyenne des 3 couleurs, ce qui perd la valeur du preset.
 
+## Plan d'implementation
+
+### Etape 1 : Ajouter `color4` et `rimColor` au type ShaderColors
+
+**Fichier** : `src/types/shader.ts`
+
+Ajouter deux champs optionnels :
 ```typescript
-interface TextureBlendParams {
-  textureMix: number;       // 0-1, how much texture vs procedural
-  layerBlend1: number;      // 0-1, blend mode for layer 1
-  layerBlend2: number;      // 0-1, blend mode for layer 2
-  layerOpacity1: number;    // 0-1
-  layerOpacity2: number;    // 0-1
-}
-
-interface ColorGradingParams {
-  lightIntensity: number;   // 0-3
-  contrast: number;         // 0.5-2
-  saturation: number;       // 0-2
-  gamma: number;            // 0.5-3
-  glowRadius: number;       // 0-2
+interface ShaderColors {
+  color1: string;
+  color2: string;
+  color3: string;
+  color4: string;    // nouveau - uColorD
+  background: string;
+  rimColor: string;  // nouveau - uRimColor
 }
 ```
 
-Add to `ShaderParams`:
-- `textureBlend: TextureBlendParams`
-- `colorGrading: ColorGradingParams`
+Mettre a jour `DEFAULT_SHADER_PARAMS` avec des valeurs par defaut.
 
-Add defaults in `DEFAULT_SHADER_PARAMS`.
+### Etape 2 : Reconstruire les shaders quand le noise change via dropdown
 
-### 2. Update BabylonCanvas (`src/components/shader/BabylonCanvas.tsx`)
+**Fichier** : `src/features/shader-studio/ShaderStudioPage.tsx`
 
-Replace the hardcoded uniform values with reads from `params.textureBlend` and `params.colorGrading`:
-- `uTextureMix` <- `p.textureBlend.textureMix`
-- `uLayerBlend1` <- `p.textureBlend.layerBlend1`
-- `uLayerBlend2` <- `p.textureBlend.layerBlend2`
-- `uLayerOpacity1` <- `p.textureBlend.layerOpacity1`
-- `uLayerOpacity2` <- `p.textureBlend.layerOpacity2`
-- `uLightIntensity` <- `p.colorGrading.lightIntensity`
-- `uContrast` <- `p.colorGrading.contrast`
-- `uSaturation` <- `p.colorGrading.saturation`
-- `uGamma` <- `p.colorGrading.gamma`
-- `uGlowRadius` <- `p.colorGrading.glowRadius`
+Ajouter un `useEffect` qui reagit aux changements de `params.noise` :
+```typescript
+useEffect(() => {
+  // Quand le noise type change, reconstruire le shader pair
+  const noiseType = params.noise as LegacyNoise;
+  if (LEGACY_SHADER_CHUNKS[noiseType]) {
+    const { vertex, fragment } = buildLegacyShaderPair(noiseType);
+    setVertexShader(vertex);
+    setFragmentShader(fragment);
+    setCompileKey(k => k + 1);
+  }
+}, [params.noise]);
+```
 
-### 3. Add controls to ShaderControls (`src/features/shader-studio/components/ShaderControls.tsx`)
+Cela garantit que selectionner "cellular" dans le dropdown reconstruit immediatement le GLSL avec le bon chunk de bruit.
 
-Add two new collapsible sections using the existing `ParamSlider` component:
+### Etape 3 : Completer `applyLegacyPresetToShaderParams`
 
-**"Texture / Blend" section** with sliders for:
-- Texture Mix (0-1)
-- Layer 1 Blend (0-1)
-- Layer 2 Blend (0-1)
-- Layer 1 Opacity (0-1)
-- Layer 2 Opacity (0-1)
+**Fichier** : `src/features/shader-studio/config/legacyShaderStudioV5.ts`
 
-**"Color Grading" section** with sliders for:
-- Light Intensity (0-3)
-- Contrast (0.5-2)
-- Saturation (0-2)
-- Gamma (0.5-3)
-- Glow Radius (0-2)
+Ajouter les champs manquants dans la fonction `applyLegacyPresetToShaderParams` :
+- `colorGrading.lightIntensity` depuis `preset.uLightIntensity`
+- `colorGrading.contrast` depuis `preset.uContrast`
+- `colorGrading.saturation` depuis `preset.uSaturation`
+- `colorGrading.gamma` depuis `preset.uGamma`
+- `colorGrading.glowRadius` depuis `preset.uGlowRadius`
+- `colors.color4` depuis `rgbToHex(preset.uColorD)`
+- `colors.rimColor` depuis `rgbToHex(preset.uRimColor)`
 
-Both sections follow the existing pattern of bordered rounded sections with a label, identical to the current "Material" and "Post FX intensity" sections.
+### Etape 4 : Utiliser color4 et rimColor dans BabylonCanvas
 
-### 4. Update defaults config (`src/features/shader-studio/config/defaults.ts`)
+**Fichier** : `src/components/shader/BabylonCanvas.tsx`
 
-Add `PARAM_RANGE` entries for all new sliders.
+Remplacer le calcul de `uColorD` (actuellement la moyenne des 3 couleurs) par la lecture de `p.colors.color4` :
+```typescript
+const c4 = hexToVec3(p.colors.color4);
+material.setVector3('uColorD', new Vector3(c4[0], c4[1], c4[2]));
+```
 
-### Files modified (4 files)
-- `src/types/shader.ts` -- new interfaces + defaults
-- `src/components/shader/BabylonCanvas.tsx` -- read from params instead of hardcoded
-- `src/features/shader-studio/components/ShaderControls.tsx` -- new UI sections
-- `src/features/shader-studio/config/defaults.ts` -- param ranges
+Remplacer `uRimColor` (actuellement = color3) par `p.colors.rimColor`.
+
+### Etape 5 : Ajouter les controles UI pour color4 et rimColor
+
+**Fichier** : `src/components/layout/RightPanel.tsx`
+
+Ajouter deux ColorSwatch supplementaires dans la section "Couleurs" :
+- "D" pour `color4`
+- "Rim" pour `rimColor`
+
+### Fichiers modifies (5 fichiers)
+
+| Fichier | Modification |
+|---|---|
+| `src/types/shader.ts` | Ajouter `color4` et `rimColor` a `ShaderColors` |
+| `src/features/shader-studio/ShaderStudioPage.tsx` | useEffect pour rebuild shader sur changement de noise |
+| `src/features/shader-studio/config/legacyShaderStudioV5.ts` | Completer `applyLegacyPresetToShaderParams` avec colorGrading + colors |
+| `src/components/shader/BabylonCanvas.tsx` | Lire `color4` et `rimColor` depuis params |
+| `src/components/layout/RightPanel.tsx` | Ajouter ColorSwatch pour D et Rim |
+
+### Resultat attendu
+
+- Changer le noise dans le dropdown reconstruit immediatement le shader GLSL correspondant
+- Changer la geometrie continue de fonctionner (deja operationnel)
+- Appliquer un preset legacy applique TOUS les parametres : geometrie, noise, 4 couleurs, rimColor, colorGrading, material, postProcessing
+- Les selections manuelles (ex: trefoil + cellular) fonctionnent independamment des presets
 
