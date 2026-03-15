@@ -488,7 +488,7 @@ export default function ShaderStudioPage() {
               shaderToyChannels={state.shaderToy.channels}
               textureLibrary={textureLibrary.map((item) => ({ id: item.id, name: item.name }))}
               selectedTextureId={selectedTextureId}
-              presetNames={Object.keys(presetLibrary)}
+              presetNames={cloudPresetNames}
               selectedPresetName={selectedPresetName}
               canUndo={history.length > 0}
               canRedo={future.length > 0}
