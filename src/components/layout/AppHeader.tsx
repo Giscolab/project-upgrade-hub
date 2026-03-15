@@ -30,14 +30,14 @@ export default function AppHeader({ shaderName, compileOk, onToggleMigration }: 
         <button aria-label="Réglages" className="h-7 w-7 rounded border border-transparent text-[#b8b8d6] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]" title="Réglages">
           <Settings2 className="mx-auto h-3.5 w-3.5" />
         </button>
-        <button
-          aria-label="Checklist migration"
-          className="h-7 w-7 rounded border border-transparent text-[#b8b8d6] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]"
-          title="Checklist migration"
-          onClick={onToggleMigration}>
-          
-          
-        </button>
+        
+
+
+
+
+
+
+        
       </div>
     </header>);
 
