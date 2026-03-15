@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { StudioState } from '../types';
-import { STUDIO_STATE_VERSION } from '../config/studioDefaults';
 
 export interface CloudPreset {
   id: string;
