@@ -44,7 +44,7 @@ export default function ShaderStudioPage() {
   const [vertexShader, setVertexShader] = useState(DEFAULT_VERTEX_SHADER);
   const [fragmentShader, setFragmentShader] = useState(DEFAULT_FRAGMENT_SHADER);
   const [compileKey, setCompileKey] = useState(0);
-  const [presetLibrary, setPresetLibrary] = useState<Record<string, NamedPreset>>(() => readPresetLibrary());
+  const { presetNames: cloudPresetNames, savePreset: cloudSavePreset, deletePreset: cloudDeletePreset, loadPreset: cloudLoadPreset } = useCloudPresets();
   const [selectedPresetName, setSelectedPresetName] = useState('');
   const [selectedLegacyPreset, setSelectedLegacyPreset] = useState('');
   const [videoTextureUrl, setVideoTextureUrl] = useState<string | null>(null);
