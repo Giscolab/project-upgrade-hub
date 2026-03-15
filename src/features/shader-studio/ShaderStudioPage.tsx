@@ -207,6 +207,17 @@ export default function ShaderStudioPage() {
     }
   }, [params.noise]);
 
+  // Block page scroll on Ctrl+wheel (zoom)
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('wheel', handler, { passive: false });
+    return () => document.removeEventListener('wheel', handler);
+  }, []);
+
   useEffect(() => () => exportAbortControllerRef.current?.abort(), []);
 
   useEffect(() => {
