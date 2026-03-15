@@ -17,14 +17,7 @@ import { WebGPUComputeService } from './services/webgpuComputeService';
 import { DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 import { StudioState } from './types';
 import { LEGACY_PRESETS, LEGACY_SHADER_CHUNKS, applyLegacyPresetToShaderParams, buildLegacyShaderPair, type LegacyNoise } from './config/legacyShaderStudioV5';
-
-interface NamedPreset {
-  version: number;
-  createdAt: string;
-  state: StudioState;
-}
-
-const PRESET_STORAGE_KEY = 'shader-studio-react-presets-v3';
+import { useCloudPresets } from './hooks/useCloudPresets';
 
 const BabylonCanvas = lazy(() => import('@/components/shader/BabylonCanvas'));
 const RightPanel = lazy(() => import('@/components/layout/RightPanel'));
