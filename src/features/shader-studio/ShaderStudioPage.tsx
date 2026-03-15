@@ -24,20 +24,6 @@ const RightPanel = lazy(() => import('@/components/layout/RightPanel'));
 const GlslEditorPanel = lazy(() => import('./components/GlslEditorPanel'));
 const MigrationChecklistPanel = lazy(() => import('./components/MigrationChecklistPanel'));
 
-function readPresetLibrary(): Record<string, NamedPreset> {
-  try {
-    const raw = localStorage.getItem(PRESET_STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, NamedPreset>;
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writePresetLibrary(library: Record<string, NamedPreset>) {
-  localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(library));
-}
 
 export default function ShaderStudioPage() {
   const initialState = useMemo(() => readPersistedStudioState(), []);
