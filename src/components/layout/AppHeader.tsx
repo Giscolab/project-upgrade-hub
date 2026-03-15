@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, Maximize2, Settings2, Wrench } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Maximize2, Settings2 } from 'lucide-react';
 
 interface AppHeaderProps {
   shaderName: string;
@@ -34,11 +34,11 @@ export default function AppHeader({ shaderName, compileOk, onToggleMigration }: 
           aria-label="Checklist migration"
           className="h-7 w-7 rounded border border-transparent text-[#b8b8d6] transition hover:border-[#2a2a3a] hover:bg-[#1a1a26]"
           title="Checklist migration"
-          onClick={onToggleMigration}
-        >
-          <Wrench className="mx-auto h-3.5 w-3.5" />
+          onClick={onToggleMigration}>
+          
+          
         </button>
       </div>
-    </header>
-  );
+    </header>);
+
 }
