@@ -271,35 +271,23 @@ export default function ShaderStudioPage() {
     });
   }, [state, updateState]);
 
-  const handleSavePreset = useCallback(() => {
+  const handleSavePreset = useCallback(async () => {
     const name = selectedPresetName.trim();
     if (!name) return;
-    const nextLibrary = {
-      ...presetLibrary,
-      [name]: {
-        version: STUDIO_STATE_VERSION,
-        createdAt: new Date().toISOString(),
-        state,
-      },
-    };
-    setPresetLibrary(nextLibrary);
-    writePresetLibrary(nextLibrary);
-  }, [presetLibrary, selectedPresetName, state]);
+    await cloudSavePreset(name, state);
+  }, [cloudSavePreset, selectedPresetName, state]);
 
   const handleLoadPreset = useCallback(() => {
     const name = selectedPresetName.trim();
-    if (!name || !presetLibrary[name]) return;
-    updateState(presetLibrary[name].state);
-  }, [presetLibrary, selectedPresetName, updateState]);
+    const loaded = cloudLoadPreset(name);
+    if (loaded) updateState(loaded);
+  }, [cloudLoadPreset, selectedPresetName, updateState]);
 
-  const handleDeletePreset = useCallback(() => {
+  const handleDeletePreset = useCallback(async () => {
     const name = selectedPresetName.trim();
-    if (!name || !presetLibrary[name]) return;
-    const nextLibrary = { ...presetLibrary };
-    delete nextLibrary[name];
-    setPresetLibrary(nextLibrary);
-    writePresetLibrary(nextLibrary);
-  }, [presetLibrary, selectedPresetName]);
+    if (!name) return;
+    await cloudDeletePreset(name);
+  }, [cloudDeletePreset, selectedPresetName]);
 
   const handleCancelExportVideo = useCallback(() => exportAbortControllerRef.current?.abort(), []);
   const handleExportPng = useCallback(async () => {
