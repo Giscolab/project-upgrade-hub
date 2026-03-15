@@ -9,7 +9,7 @@ import { useMidiRuntime } from './hooks/useMidiRuntime';
 import { useOscRuntime } from './hooks/useOscRuntime';
 import { useWebcamChannel } from './hooks/useWebcamChannel';
 import { useTextureLibrary } from './hooks/useTextureLibrary';
-import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from './config/studioDefaults';
+import { DEFAULT_STUDIO_STATE } from './config/studioDefaults';
 import { exportShadertoyShader } from './services/shadertoyExportService';
 import { exportShaderSource } from './services/shaderExportService';
 import { downloadBlob, exportCanvasPng, recordCanvasVideo } from './services/videoExportService';
