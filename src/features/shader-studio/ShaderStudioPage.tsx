@@ -9,7 +9,7 @@ import { useMidiRuntime } from './hooks/useMidiRuntime';
 import { useOscRuntime } from './hooks/useOscRuntime';
 import { useWebcamChannel } from './hooks/useWebcamChannel';
 import { useTextureLibrary } from './hooks/useTextureLibrary';
-import { DEFAULT_STUDIO_STATE, STUDIO_STATE_VERSION } from './config/studioDefaults';
+import { DEFAULT_STUDIO_STATE } from './config/studioDefaults';
 import { exportShadertoyShader } from './services/shadertoyExportService';
 import { exportShaderSource } from './services/shaderExportService';
 import { downloadBlob, exportCanvasPng, recordCanvasVideo } from './services/videoExportService';
@@ -17,34 +17,13 @@ import { WebGPUComputeService } from './services/webgpuComputeService';
 import { DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER } from '@/types/shader';
 import { StudioState } from './types';
 import { LEGACY_PRESETS, LEGACY_SHADER_CHUNKS, applyLegacyPresetToShaderParams, buildLegacyShaderPair, type LegacyNoise } from './config/legacyShaderStudioV5';
-
-interface NamedPreset {
-  version: number;
-  createdAt: string;
-  state: StudioState;
-}
-
-const PRESET_STORAGE_KEY = 'shader-studio-react-presets-v3';
+import { useCloudPresets } from './hooks/useCloudPresets';
 
 const BabylonCanvas = lazy(() => import('@/components/shader/BabylonCanvas'));
 const RightPanel = lazy(() => import('@/components/layout/RightPanel'));
 const GlslEditorPanel = lazy(() => import('./components/GlslEditorPanel'));
 const MigrationChecklistPanel = lazy(() => import('./components/MigrationChecklistPanel'));
 
-function readPresetLibrary(): Record<string, NamedPreset> {
-  try {
-    const raw = localStorage.getItem(PRESET_STORAGE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as Record<string, NamedPreset>;
-    return parsed && typeof parsed === 'object' ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function writePresetLibrary(library: Record<string, NamedPreset>) {
-  localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(library));
-}
 
 export default function ShaderStudioPage() {
   const initialState = useMemo(() => readPersistedStudioState(), []);
@@ -65,7 +44,7 @@ export default function ShaderStudioPage() {
   const [vertexShader, setVertexShader] = useState(DEFAULT_VERTEX_SHADER);
   const [fragmentShader, setFragmentShader] = useState(DEFAULT_FRAGMENT_SHADER);
   const [compileKey, setCompileKey] = useState(0);
-  const [presetLibrary, setPresetLibrary] = useState<Record<string, NamedPreset>>(() => readPresetLibrary());
+  const { presetNames: cloudPresetNames, savePreset: cloudSavePreset, deletePreset: cloudDeletePreset, loadPreset: cloudLoadPreset } = useCloudPresets();
   const [selectedPresetName, setSelectedPresetName] = useState('');
   const [selectedLegacyPreset, setSelectedLegacyPreset] = useState('');
   const [videoTextureUrl, setVideoTextureUrl] = useState<string | null>(null);
@@ -228,6 +207,17 @@ export default function ShaderStudioPage() {
     }
   }, [params.noise]);
 
+  // Block page scroll on Ctrl+wheel (zoom)
+  useEffect(() => {
+    const handler = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('wheel', handler, { passive: false });
+    return () => document.removeEventListener('wheel', handler);
+  }, []);
+
   useEffect(() => () => exportAbortControllerRef.current?.abort(), []);
 
   useEffect(() => {
@@ -292,35 +282,23 @@ export default function ShaderStudioPage() {
     });
   }, [state, updateState]);
 
-  const handleSavePreset = useCallback(() => {
+  const handleSavePreset = useCallback(async () => {
     const name = selectedPresetName.trim();
     if (!name) return;
-    const nextLibrary = {
-      ...presetLibrary,
-      [name]: {
-        version: STUDIO_STATE_VERSION,
-        createdAt: new Date().toISOString(),
-        state,
-      },
-    };
-    setPresetLibrary(nextLibrary);
-    writePresetLibrary(nextLibrary);
-  }, [presetLibrary, selectedPresetName, state]);
+    await cloudSavePreset(name, state);
+  }, [cloudSavePreset, selectedPresetName, state]);
 
   const handleLoadPreset = useCallback(() => {
     const name = selectedPresetName.trim();
-    if (!name || !presetLibrary[name]) return;
-    updateState(presetLibrary[name].state);
-  }, [presetLibrary, selectedPresetName, updateState]);
+    const loaded = cloudLoadPreset(name);
+    if (loaded) updateState(loaded);
+  }, [cloudLoadPreset, selectedPresetName, updateState]);
 
-  const handleDeletePreset = useCallback(() => {
+  const handleDeletePreset = useCallback(async () => {
     const name = selectedPresetName.trim();
-    if (!name || !presetLibrary[name]) return;
-    const nextLibrary = { ...presetLibrary };
-    delete nextLibrary[name];
-    setPresetLibrary(nextLibrary);
-    writePresetLibrary(nextLibrary);
-  }, [presetLibrary, selectedPresetName]);
+    if (!name) return;
+    await cloudDeletePreset(name);
+  }, [cloudDeletePreset, selectedPresetName]);
 
   const handleCancelExportVideo = useCallback(() => exportAbortControllerRef.current?.abort(), []);
   const handleExportPng = useCallback(async () => {
@@ -521,7 +499,7 @@ export default function ShaderStudioPage() {
               shaderToyChannels={state.shaderToy.channels}
               textureLibrary={textureLibrary.map((item) => ({ id: item.id, name: item.name }))}
               selectedTextureId={selectedTextureId}
-              presetNames={Object.keys(presetLibrary)}
+              presetNames={cloudPresetNames}
               selectedPresetName={selectedPresetName}
               canUndo={history.length > 0}
               canRedo={future.length > 0}
